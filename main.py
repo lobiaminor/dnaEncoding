@@ -1,7 +1,7 @@
 import io
 import sys
-import decoder
-import encoder
+import sr_decoder
+import sr_encoder
 import pywt 
 
 def main():
