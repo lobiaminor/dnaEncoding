@@ -20,9 +20,12 @@ https://www.ece.uvic.ca/~frodo/publications/phdthesis.pdf
 https://pywavelets.readthedocs.io/en/latest/
 https://pywavelets.readthedocs.io/en/v0.3.0/ref/dwt-discrete-wavelet-transform.html
 
-VERY GOOD:
+VERY GOOD: FINALLY NOT VERY GOOD
 http://pywavelets.readthedocs.io/en/latest/ref/2d-dwt-and-idwt.html?highlight=haar
 WHY is discrete not int -> int?
+
+GOOD:
+https://stackoverflow.com/a/15868889/5609680
 
 Jose
 - Wrap the decoder in a cool class. DONE
