@@ -8,21 +8,34 @@ import matplotlib.pyplot as plt
 
 
 def main():
-	# Read image
-	img_src = "lena.jpg"
-	dirname = os.path.dirname(__file__)
-	filename = os.path.join(dirname, img_src)
-	image = img.imread(img_src)
+    # Read image
+    img_src = "lena.jpg"
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, img_src)
+    image = img.imread(img_src)
 
-	# pywt.wavedec2(data, wavelet, mode='symmetric', level=None, axes=(-2, -1))
-	# http://pywavelets.readthedocs.io/en/latest/ref/2d-dwt-and-idwt.html?highlight=haar#d-multilevel-decomposition-using-wavedec2
-	coeffs = iwt2(image)#pywt.wavedec2(image, 'db1')
-	print(coeffs)
-	# Show the image
-	plt.imshow(iiwt2(coeffs))#pywt.waverec2(coeffs, 'db1'))
-	plt.gray()
-	plt.show()
-	
+    x_axis, y_axis = image.shape
+    # http://pywavelets.readthedocs.io/en/latest/ref/2d-dwt-and-idwt.html?highlight=haar#d-multilevel-decomposition-using-wavedec2
+    new_image = np.zeros_like(image)
+    new_image[:] = image
+    for i in range(0, 1):
+        midx = int(x_axis/(np.power(2,i)))
+        midy = int(y_axis/(np.power(2,i)))
+
+        LL = np.zeros((midx, midy)).astype(int)
+        LL[:] = new_image[0:midx, 0:midy].astype(int)
+
+        print(LL)
+
+        new_image[0:midx, 0:midy] =  iwt2(image)
+        new_image = new_image.astype(np.uint64)
+        print(type(new_image[0,0]))
+        print(new_image)
+    # Show the image
+    plt.imshow(new_image)
+    plt.gray()
+    plt.show()
+
 
 def iwt(array):
     output = np.zeros_like(array)
@@ -50,6 +63,6 @@ def iiwt2(array):
 
 
 if __name__ == "__main__":
-	main()
+    main()
 
 
