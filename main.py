@@ -16,21 +16,19 @@ def main():
 
     x_axis, y_axis = image.shape
     # http://pywavelets.readthedocs.io/en/latest/ref/2d-dwt-and-idwt.html?highlight=haar#d-multilevel-decomposition-using-wavedec2
-    new_image = np.zeros_like(image)
+    new_image = np.zeros(image.shape, dtype=np.int64)
     new_image[:] = image
     for i in range(0, 1):
         midx = int(x_axis/(np.power(2,i)))
         midy = int(y_axis/(np.power(2,i)))
 
-        LL = np.zeros((midx, midy)).astype(int)
-        LL[:] = new_image[0:midx, 0:midy].astype(int)
+        LL = np.zeros((midx, midy))
+        LL[:] = new_image[0:midx, 0:midy]
 
-        print(LL)
+        print("LL: ", LL.dtype)
 
         new_image[0:midx, 0:midy] =  iwt2(image)
-        new_image = new_image.astype(np.uint64)
-        print(type(new_image[0,0]))
-        print(new_image)
+        print("NI: ", new_image.dtype)
     # Show the image
     plt.imshow(new_image)
     plt.gray()
@@ -64,5 +62,4 @@ def iiwt2(array):
 
 if __name__ == "__main__":
     main()
-
 
