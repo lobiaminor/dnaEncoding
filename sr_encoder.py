@@ -23,9 +23,6 @@ class StackRunEncoder(object):
         return bit_rep
 
 
-
-
-
     def RunEncoding (run_length):
         #we encode 0 as -, 1 as + and we truncate the least significant bit if the number is not of the form (2^k)-1
         bit_rep = list("{0:b}".format(run_length))
