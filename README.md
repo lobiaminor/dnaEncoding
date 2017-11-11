@@ -10,9 +10,24 @@ Our idea right now is to send a small header -two stacks- indicating the dimensi
 What we think today: the optimal thing is to have runs be as long as possible (having stacks grouped together). So possible options: use different scanning directions for each subband (horizontal/vertical/diagonal) see image
 https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_transform-lichtenstein.png
 
-3. 9/7 lifting scheme: we dont know how to implement it. Help?
+3. 9/7 lifting scheme: we dont know how to implement it. Help? Maybe not use it
 
 # To-do list
+
+1- Put together encoder/decoder and transforms: scanning
+2- Comparing different scanning and encoding: compare the results of scanning row-wise, col-wise and hybrid scheme (and decide what to do with the HH subbands). 
+3- Start the report 
+
+Jose
+- Wrap the decoder in a cool class. DONE
+
+
+Both
+- Start with the report (it will be awesome)
+- Comment the iwt methods properly
+- Git Ignore __pycache__
+
+RESOURCES
 - Haar wavelet integer transform (aka Discrete wavelet transform?)
 http://ieeexplore.ieee.org/abstract/document/586035/?reload=true
 https://www.ece.uvic.ca/~frodo/publications/phdthesis.pdf
@@ -28,10 +43,3 @@ GOOD:
 https://stackoverflow.com/a/15868889/5609680
 https://9p.io/who/wim/papers/factor/factor.pdf
 http://www.polyvalens.com/blog/wavelets/fast-lifting-wavelet-transform/#fig2
-Jose
-- Wrap the decoder in a cool class. DONE
-
-
-Both
-- Start with the report (it will be awesome)
-- Comment the iwt methods properly
