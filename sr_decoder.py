@@ -1,5 +1,3 @@
-import sys
-
 class StackRunDecoder(object):
     """A stack run decoder using a base 4 alphabet. 
 
@@ -13,8 +11,8 @@ class StackRunDecoder(object):
         self.symbols = {v:k for k,v in symbols.items()}
 
 
-    def decode(self, qits):
-        """Decodes an incoming list of qits 
+    def decode(self, signal):
+        """Decodes an incoming list of signal 
         Params:
         bits: stack-run encoded image, represented by a list of bits
         """
@@ -22,10 +20,10 @@ class StackRunDecoder(object):
         stack_sym = ["0", "1"]
 
         # Convert the string to base 0,1,+,-
-        qits = list(map(self.symbols.get, qits))
+        signal = list(map(self.symbols.get, signal))
         
         # Determine if we will begin with a run or with a stack
-        mode = "RUN" if (qits[0] in run_sym) else "STACK"  
+        mode = "RUN" if (signal[0] in run_sym) else "STACK"  
         
         # Current word we are trying to decode
         current = []
@@ -33,7 +31,7 @@ class StackRunDecoder(object):
         # Output
         result = []
         
-        for q in qits:
+        for q in signal:
             if mode == "RUN":
                 # As long as we keep receiving + or -, store them and continue
                 if q in run_sym:
@@ -60,8 +58,12 @@ class StackRunDecoder(object):
                     result.append(str(self.decode_stack(current)))
                     current.clear()
                     mode = "RUN"
+        
+        # If there is something left on current, it means a run is yet to be decoded
+        if current:
+            result.extend(["0"]*self.decode_run(current))
 
-        print(result)
+        return result
 
 
     def decode_stack(self, bits):
@@ -84,9 +86,9 @@ class StackRunDecoder(object):
     def decode_run(self, bits):
         """Decodes a bit string (ending with a sign) representing an encoded run"""
 
-        # If the string contains only +'s, it means it is 2^k - 1, 
+        # If the string contains only +'s, it means it is 2^k - 1,
         # so we don't need to add a + in the end. Otherwise we do
-        if not(len(set(bits)) == 1 and bits[0] == "+"): # TODO: The + shouldn't be hardcoded here either 
+        if not(len(set(bits)) == 1 and bits[0] == "+"):
             bits.append("+")
 
         # Runs are saved in reverse order too, so undo it
@@ -104,6 +106,6 @@ def main():
     d = StackRunDecoder(sym)
     d.decode(st)
 
+
 if __name__ == "__main__":
     main()
-

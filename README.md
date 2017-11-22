@@ -12,6 +12,8 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 
 3. 9/7 lifting scheme: we dont know how to implement it. Help? Maybe not use it
 
+4. Compression ratio: how to calculate it? (We are going from base 2 to base 4 so hmm) 
+
 # To-do list
 
 1- Put together encoder/decoder and transforms: scanning
@@ -43,3 +45,7 @@ GOOD:
 https://stackoverflow.com/a/15868889/5609680
 https://9p.io/who/wim/papers/factor/factor.pdf
 http://www.polyvalens.com/blog/wavelets/fast-lifting-wavelet-transform/#fig2
+
+- Images for testing:
+	http://www.imageprocessingplace.com/downloads_V3/root_downloads/image_databases/standard_test_images.zip
+	*convert to jpg: mogrify -format jpg *.tif
