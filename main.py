@@ -12,11 +12,11 @@ from PIL import Image
 
 def main():
     # Read images from the image dir
-    # img_src = "img/{}.jpg".format(sys.argv[1])
+    # img_src = "img_original/{}.jpg".format(sys.argv[1])
     # dirname = os.path.dirname(__file__)
     # filename = os.path.join(dirname, img_src)
     
-    # Find all .jpg images in the img dir    
+    # Find all .jpg images in the img_original dir
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 # a.T.flatten()
 # To reconstruct
 # np.reshape(a, (x,y)) -> with a -1 on the dimension we dont want to enforce
-# TODO: Scan through the img and encode it
+# TODO: Scan through the img_original and encode it
 
 # # Testing stuff
 # sym = {"0":"A", "1":"T", "+":"C", "-":"G"} 

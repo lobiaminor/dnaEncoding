@@ -47,6 +47,7 @@ GOOD:
 https://stackoverflow.com/a/15868889/5609680
 https://9p.io/who/wim/papers/factor/factor.pdf
 http://www.polyvalens.com/blog/wavelets/fast-lifting-wavelet-transform/#fig2
+http://www.olhovsky.com/2009/03/2d-cdf-97-wavelet-transform-in-python/
 
 - Images for testing:
 	http://www.imageprocessingplace.com/downloads_V3/root_downloads/image_databases/standard_test_images.zip
