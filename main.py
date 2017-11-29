@@ -45,13 +45,44 @@ def main():
 
         # Calculate and print qbpp (qbits/px)
         qbpp = len(encoded)/(image.shape[0]*image.shape[1])
-        print("{}: {}".format(filename, qbpp))
+        
+        # Measure entropy
+        print(filename)
+        print("qbits/px = {}".format(qbpp))
+        print("Entropy = {} nats/symbol".format(entropy(encoded)))
+
         # Show the image
         # plt.imshow(result)
         # plt.gray()
         # plt.show()
 
+def get_symbol2freq(vals):
+    """ Creates a dictionary where each symbol has its frequency associated to it"""
+    hist = {}
 
+    # Get the histogram
+    for v in vals:
+        if v in hist:
+            hist[v] = hist[v] + 1
+        else:
+            hist[v] = 1
+
+    return hist
+
+def entropy(signal):
+    """ Calculate the entropy of the image passed as parameter (matrix)"""
+    hist = get_symbol2freq(signal)
+
+    # Normalize the freqs
+    total = float(sum(hist.values()))
+
+    entropy = 0
+    for count in hist.values():
+        if count != 0:
+            norm = count/total
+            entropy += norm * np.math.log(norm, 4)
+
+    return (entropy*(-1))
 
 if __name__ == "__main__":
     main()

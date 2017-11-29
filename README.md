@@ -14,6 +14,8 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 
 4. Compression ratio: how to calculate it? (We are going from base 2 to base 4 so hmm)  - NATS PER SYMBOLS
 
+5. Interpreting the entropy: higher value is better? (max is 1 -> log4(4))
+
 # To-do list
 
 1- Put together encoder/decoder and transforms: scanning
