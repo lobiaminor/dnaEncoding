@@ -12,7 +12,7 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 
 3. 9/7 lifting scheme: we dont know how to implement it. Help? Maybe not use it
 
-4. Compression ratio: how to calculate it? (We are going from base 2 to base 4 so hmm) 
+4. Compression ratio: how to calculate it? (We are going from base 2 to base 4 so hmm)  - NATS PER SYMBOLS
 
 # To-do list
 
@@ -50,3 +50,6 @@ http://www.olhovsky.com/2009/03/2d-cdf-97-wavelet-transform-in-python/
 - Images for testing:
 	http://www.imageprocessingplace.com/downloads_V3/root_downloads/image_databases/standard_test_images.zip
 	*convert to jpg: mogrify -format jpg *.tif
+
+COST / TIME / 
+Take into account: Max 100 nucle per sequencing (add small delay after each 100)

@@ -25,7 +25,10 @@ def main():
 
         transformed = wv.iwtn(image, 2)
         
-        sym = {"0":"A", "1":"T", "+":"C", "-":"G"} 
+        # name = filename.split("/")[-1].split(".")[0]
+        # name = name + "_encoded.txt"
+
+        sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
         sr_enc = sr_encoder.StackRunEncoder(sym)
         sr_dec = sr_decoder.StackRunDecoder(sym)
 
@@ -33,6 +36,10 @@ def main():
         decoded = sr_dec.decode(encoded)
 
         decoded = np.reshape(decoded, transformed.shape)
+
+        # with open(name,'w') as f:
+        #     for s in encoded:
+        #         f.write(str(s))
 
         result = wv.iiwtn(decoded, 2)
 
