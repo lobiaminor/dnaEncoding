@@ -58,3 +58,5 @@ http://www.olhovsky.com/2009/03/2d-cdf-97-wavelet-transform-in-python/
 
 COST / TIME / 
 Take into account: Max 100 nucle per sequencing (add small delay after each 100)
+
+In information theory, entropy is a metric used to measure the amount of information produced by a source. 

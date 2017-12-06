@@ -1,50 +1,50 @@
-Transform: Haar 4, scanning: horizontal, full img  
+Transform: Haar 3 levels, scanning: horizontal, full img 
+
 
 ./img/lake.jpg
 Original entropy = 3.7433157498363445 nats/symbol
-Encoded entropy = 2.010409164692977 nats/symbol
+Transformed entropy = 2.030473765653439 nats/symbol
 
 ./img/woman_blonde.jpg
 Original entropy = 3.5790816941431 nats/symbol
-Encoded entropy = 1.9250744254397925 nats/symbol
+Transformed entropy = 1.9472707541484173 nats/symbol
 
 ./img/woman_darkhair.jpg
 Original entropy = 3.6371170827742962 nats/symbol
-Encoded entropy = 1.757378650099319 nats/symbol
+Transformed entropy = 1.785563988580516 nats/symbol
 
 ./img/cameraman.jpg
 Original entropy = 3.52679431821849 nats/symbol
-Encoded entropy = 1.8662685882635275 nats/symbol
+Transformed entropy = 1.8901345124969562 nats/symbol
 
 ./img/lena.jpg
 Original entropy = 3.723236341109111 nats/symbol
-Encoded entropy = 1.8617312777022434 nats/symbol
+Transformed entropy = 1.8855874796927166 nats/symbol
 
 ./img/jetplane.jpg
 Original entropy = 3.358575222353564 nats/symbol
-Encoded entropy = 1.8817372006697157 nats/symbol
+Transformed entropy = 1.905357961060461 nats/symbol
 
 ./img/house.jpg
 Original entropy = 2.8838914773814173 nats/symbol
-Encoded entropy = 1.7972980897738615 nats/symbol
+Transformed entropy = 1.8242593857489753 nats/symbol
 
 ./img/peppers_gray.jpg
 Original entropy = 3.7904449957467947 nats/symbol
-Encoded entropy = 1.9078771970676003 nats/symbol
+Transformed entropy = 1.9290687437098204 nats/symbol
 
 ./img/livingroom.jpg
 Original entropy = 3.7194906133488486 nats/symbol
-Encoded entropy = 1.9417783614377657 nats/symbol
+Transformed entropy = 1.9638655871950903 nats/symbol
 
 ./img/pirate.jpg
 Original entropy = 3.654191549879053 nats/symbol
-Encoded entropy = 1.949005785749357 nats/symbol
+Transformed entropy = 1.9708170031725443 nats/symbol
 
 ./img/mandril_gray.jpg
 Original entropy = 3.6468453256418605 nats/symbol
-Encoded entropy = 2.0421505087676035 nats/symbol
+Transformed entropy = 2.064435537268197 nats/symbol
 
 ./img/walkbridge.jpg
 Original entropy = 3.8553748483892885 nats/symbol
-Encoded entropy = 2.080507356977439 nats/symbol
-
+Transformed entropy = 2.1006466291732457 nats/symbol

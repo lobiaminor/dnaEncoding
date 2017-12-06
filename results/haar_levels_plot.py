@@ -21,32 +21,37 @@ def main():
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
-    for filename in imagelist:
+    for filename in imagelist[4:5]:
         image = img.imread(filename)
         image = image.copy()
-
-        transformed = wv.iwtn(image, 3) #db.fwt97_2d(image, 3)
         
-        # name = filename.split("/")[-1].split(".")[0]
-        # name = name + "_encoded.txt"
+        entropies = []
 
-        sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
-        sr_enc = sr_encoder.StackRunEncoder(sym)
-        sr_dec = sr_decoder.StackRunDecoder(sym)
+        for n in range(9):
 
-        encoded, runs, stacks = sr_enc.encode(transformed.flatten())  
-        decoded = sr_dec.decode(encoded)
+            transformed = wv.iwtn(image, n) #db.fwt97_2d(image, 3)
+            
+            # name = filename.split("/")[-1].split(".")[0]
+            # name = name + "_encoded.txt"
 
-        decoded = np.reshape(decoded, transformed.shape)
+            sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
+            sr_enc = sr_encoder.StackRunEncoder(sym)
+            sr_dec = sr_decoder.StackRunDecoder(sym)
 
-        # with open(name,'w') as f:
-        #     for s in encoded:
-        #         f.write(str(s))
+            encoded, runs, stacks = sr_enc.encode(transformed.flatten())  
+            decoded = sr_dec.decode(encoded)
 
-        result = wv.iiwtn(decoded, 3) #db.iwt97_2d(decoded, 3)
+            decoded = np.reshape(decoded, transformed.shape)
 
-        # Calculate and print qbpp (qbits/px)
-        qbpp = len(encoded)/(image.shape[0]*image.shape[1])
+            # with open(name,'w') as f:
+            #     for s in encoded:
+            #         f.write(str(s))
+
+            result = wv.iiwtn(decoded, n) #db.iwt97_2d(decoded, 3)
+
+            # Calculate and print qbpp (qbits/px)
+            qbpp = len(encoded)/(image.shape[0]*image.shape[1])
+            entropies.append(entropy(runs, stacks))
 
         # Measure entropy
         print(filename)
@@ -54,6 +59,10 @@ def main():
         print("OG Entropy = {}".format(entropy_single(image)))
         print("Entropy = {} nats/symbol".format(entropy(runs, stacks)))
 
+        plt.plot(range(9), entropies)
+        plt.ylabel("Entropy (nats/sym)")
+        plt.xlabel("Number of decomposition levels")
+        plt.show()
         # Show the image
         # plt.imshow(result)
         # plt.gray()
