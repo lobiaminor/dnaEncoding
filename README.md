@@ -12,7 +12,7 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 
 3. 9/7 lifting scheme: we dont know how to implement it. Help? Maybe not use it
 
-4. Compression ratio: how to calculate it? (We are going from base 2 to base 4 so hmm)  - NATS PER SYMBOLS
+4. Compression ratio: how to calculate it? (We are going from base 2 to base 4 so hmm)  - NATS PER SYMBOLS. Take codewords into account, not +, -...
 
 5. Interpreting the entropy: higher value is better? (max is 1 -> log4(4))
 
@@ -21,6 +21,9 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 1- Put together encoder/decoder and transforms: scanning
 2- Comparing different scanning and encoding: compare the results of scanning row-wise, col-wise and hybrid scheme (and decide what to do with the HH subbands). 
 3- Start the report 
+4- Plot comparison of using different levels of haar decomposition
+5- Try also daub. 5/3 lifting(2,2)
+6- Quaternary huffman
 
 Jose
 - Wrap the decoder in a cool class. DONE

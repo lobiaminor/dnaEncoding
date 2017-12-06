@@ -1,0 +1,37 @@
+Transform: Haar 2, scanning: horizontal, full img  
+./img/lake.jpg
+qbits/px = 3.382099151611328
+Entropy = 0.9285992375057383 nats/symbol
+./img/woman_blonde.jpg
+qbits/px = 3.246501922607422
+Entropy = 0.9353332603448675 nats/symbol
+./img/woman_darkhair.jpg
+qbits/px = 2.3828887939453125
+Entropy = 0.9677714858785395 nats/symbol
+./img/cameraman.jpg
+qbits/px = 2.5186614990234375
+Entropy = 0.9602673989502052 nats/symbol
+./img/lena.jpg
+qbits/px = 2.919391632080078
+Entropy = 0.9500584745493957 nats/symbol
+./img/jetplane.jpg
+qbits/px = 2.8097076416015625
+Entropy = 0.9535440415830758 nats/symbol
+./img/house.jpg
+qbits/px = 2.0146865844726562
+Entropy = 0.9618924730694529 nats/symbol
+./img/peppers_gray.jpg
+qbits/px = 3.2346534729003906
+Entropy = 0.9369686732547103 nats/symbol
+./img/livingroom.jpg
+qbits/px = 3.2849349975585938
+Entropy = 0.9341098568447865 nats/symbol
+./img/pirate.jpg
+qbits/px = 3.1798744201660156
+Entropy = 0.9373063691257429 nats/symbol
+./img/mandril_gray.jpg
+qbits/px = 3.7404022216796875
+Entropy = 0.912731109613667 nats/symbol
+./img/walkbridge.jpg
+qbits/px = 3.8378829956054688
+Entropy = 0.908056436200585 nats/symbol

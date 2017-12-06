@@ -47,18 +47,34 @@ class StackRunEncoder(object):
     def encode(self, signal):
         run_length = 0
         encoded_sig = list()
+        
+        run_freqs = {}
+        stack_freqs = {}
+        
         for i in range(0, len(signal)):
             if signal[i] == 0:
                 run_length+=1
             else:
                 encoded_sig.extend(self.runEncoding(run_length))
+                if run_length in run_freqs:
+                    run_freqs[run_length] = run_freqs[run_length] + 1
+                else:
+                    run_freqs[run_length] = 1 
                 run_length = 0
                 encoded_sig.extend(self.stackEncoding(signal[i]))
+                if signal[i] in stack_freqs:
+                    stack_freqs[signal[i]] = stack_freqs[signal[i]] + 1
+                else:
+                    stack_freqs[signal[i]] = 1 
 
         # Handle the case of having a run at the end of the signal
         if signal[-1] == 0:
             encoded_sig.extend(self.runEncoding(run_length))
+            if run_length in run_freqs:
+                run_freqs[run_length] = run_freqs[run_length] + 1
+            else:
+                run_freqs[run_length] = 1 
 
         encoded_translated_sig = list(map(self.symbols.get, encoded_sig))
 
-        return encoded_translated_sig
+        return encoded_translated_sig, run_freqs, stack_freqs

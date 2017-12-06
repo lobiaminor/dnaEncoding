@@ -3,6 +3,7 @@ import sys
 import sr_decoder
 import sr_encoder
 # import pywt
+import nineseven as db
 import glob
 import numpy as np
 import matplotlib.image as img
@@ -20,10 +21,11 @@ def main():
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
-    for filename in imagelist:
+    for filename in imagelist[4:5]:
         image = img.imread(filename)
+        image = image.copy()
 
-        transformed = wv.iwtn(image, 2)
+        transformed = wv.iwtn(image, 4) #db.fwt97_2d(image, 3)
         
         # name = filename.split("/")[-1].split(".")[0]
         # name = name + "_encoded.txt"
@@ -32,7 +34,7 @@ def main():
         sr_enc = sr_encoder.StackRunEncoder(sym)
         sr_dec = sr_decoder.StackRunDecoder(sym)
 
-        encoded = sr_enc.encode(transformed.flatten())  
+        encoded, runs, stacks = sr_enc.encode(transformed.flatten())  
         decoded = sr_dec.decode(encoded)
 
         decoded = np.reshape(decoded, transformed.shape)
@@ -41,23 +43,38 @@ def main():
         #     for s in encoded:
         #         f.write(str(s))
 
-        result = wv.iiwtn(decoded, 2)
+        result = wv.iiwtn(decoded, 4) #db.iwt97_2d(decoded, 3)
 
         # Calculate and print qbpp (qbits/px)
         qbpp = len(encoded)/(image.shape[0]*image.shape[1])
-        
+
         # Measure entropy
         print(filename)
         print("qbits/px = {}".format(qbpp))
-        print("Entropy = {} nats/symbol".format(entropy(encoded)))
+        print("OG Entropy = {}".format(entropy_single(image)))
+        print("Entropy = {} nats/symbol".format(entropy(runs, stacks)))
 
         # Show the image
         # plt.imshow(result)
         # plt.gray()
         # plt.show()
 
+
+def entropy(runs, stacks):
+    # Normalize the freqs
+    total = float(sum(runs.values()) + sum(stacks.values()))
+
+    entropy = 0
+    
+    for count in (list(runs.values()) + list(stacks.values())):
+        if count != 0:
+            norm = count/total
+            entropy += norm * np.math.log(norm, 4)
+
+    return -entropy
+
+
 def get_symbol2freq(vals):
-    """ Creates a dictionary where each symbol has its frequency associated to it"""
     hist = {}
 
     # Get the histogram
@@ -69,20 +86,21 @@ def get_symbol2freq(vals):
 
     return hist
 
-def entropy(signal):
-    """ Calculate the entropy of the image passed as parameter (matrix)"""
-    hist = get_symbol2freq(signal)
+
+def entropy_single(image):
+    hist = get_symbol2freq(image.flatten()) 
 
     # Normalize the freqs
     total = float(sum(hist.values()))
 
     entropy = 0
+    
     for count in hist.values():
         if count != 0:
             norm = count/total
             entropy += norm * np.math.log(norm, 4)
 
-    return (entropy*(-1))
+    return -entropy
 
 if __name__ == "__main__":
     main()
