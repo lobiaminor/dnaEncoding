@@ -1,0 +1,61 @@
+Transform: Haar 3 levels, scanning: horizontal, full img 
+
+./img/lake.jpg
+Original entropy = 3.7433157498363445 Shannon/symbol
+Encoded entropy = 2.030473765653439 Shannon/symbol
+Average codeword length = 1.770033111187875 Shannon/symbol
+
+./img/woman_blonde.jpg
+Original entropy = 3.5790816941431 Shannon/symbol
+Encoded entropy = 1.9472707541484173 Shannon/symbol
+Average codeword length = 1.6722903091814572 Shannon/symbol
+
+./img/woman_darkhair.jpg
+Original entropy = 3.6371170827742962 Shannon/symbol
+Encoded entropy = 1.785563988580516 Shannon/symbol
+Average codeword length = 1.443798787309427 Shannon/symbol
+
+./img/cameraman.jpg
+Original entropy = 3.52679431821849 Shannon/symbol
+Encoded entropy = 1.8901345124969562 Shannon/symbol
+Average codeword length = 1.5405976731807498 Shannon/symbol
+
+./img/lena.jpg
+Original entropy = 3.723236341109111 Shannon/symbol
+Encoded entropy = 1.8855874796927166 Shannon/symbol
+Average codeword length = 1.5687612508896016 Shannon/symbol
+
+./img/jetplane.jpg
+Original entropy = 3.358575222353564 Shannon/symbol
+Encoded entropy = 1.905357961060461 Shannon/symbol
+Average codeword length = 1.572231918231696 Shannon/symbol
+
+./img/house.jpg
+Original entropy = 2.8838914773814173 Shannon/symbol
+Encoded entropy = 1.8242593857489753 Shannon/symbol
+Average codeword length = 1.4975340969332913 Shannon/symbol
+
+./img/peppers_gray.jpg
+Original entropy = 3.7904449957467947 Shannon/symbol
+Encoded entropy = 1.9290687437098204 Shannon/symbol
+Average codeword length = 1.6638379893862023 Shannon/symbol
+
+./img/livingroom.jpg
+Original entropy = 3.7194906133488486 Shannon/symbol
+Encoded entropy = 1.9638655871950903 Shannon/symbol
+Average codeword length = 1.6926819798607287 Shannon/symbol
+
+./img/pirate.jpg
+Original entropy = 3.654191549879053 Shannon/symbol
+Encoded entropy = 1.9708170031725443 Shannon/symbol
+Average codeword length = 1.6829386766411427 Shannon/symbol
+
+./img/mandril_gray.jpg
+Original entropy = 3.6468453256418605 Shannon/symbol
+Encoded entropy = 2.064435537268197 Shannon/symbol
+Average codeword length = 1.881161359809349 Shannon/symbol
+
+./img/walkbridge.jpg
+Original entropy = 3.8553748483892885 Shannon/symbol
+Encoded entropy = 2.1006466291732457 Shannon/symbol
+Average codeword length = 1.9342236044759376 Shannon/symbol
