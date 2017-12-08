@@ -50,10 +50,10 @@ def main():
 
         # Measure entropy
         print(filename)
-        print("qbits/px = {}".format(qbpp))
-        print("OG Entropy = {}".format(entropy_single(image)))
-        print("Entropy = {} nats/symbol".format(entropy(runs, stacks)))
-
+        #print("qbits/px = {}".format(qbpp))
+        print("Original entropy = {} Shannon/symbol".format(entropy_single(image)))
+        print("Encoded entropy = {} Shannon/symbol".format(entropy(runs, stacks)))
+        print("Average codeword length = {} Shannon/symbol".format(avg_length(runs, stacks)))
         # Show the image
         # plt.imshow(result)
         # plt.gray()
@@ -72,6 +72,27 @@ def entropy(runs, stacks):
             entropy += norm * np.math.log(norm, 4)
 
     return -entropy
+
+
+def avg_length(runs, stacks):
+    # Normalize the freqs
+    total = float(sum(runs.values()) + sum(stacks.values()))
+
+    length = 0
+
+    for codeword, count in runs.items():
+        if count != 0:
+            norm = count/total
+            length += norm * len(codeword)
+
+    # Sorry Riccardo and future me for this double for
+    # It's friday but I promise to fix it next week
+    for codeword, count in stacks.items():
+        if count != 0:
+            norm = count/total
+            length += norm * len(codeword)
+
+    return length
 
 
 def get_symbol2freq(vals):
