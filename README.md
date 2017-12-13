@@ -24,6 +24,7 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 4- Plot comparison of using different levels of haar decomposition
 5- Try also daub. 5/3 lifting(2,2)
 6- Quaternary huffman
+7- Scan by subbands and provide the results of each single subband (3 levels is fine) HIGH PRIORITY
 
 Jose
 - Wrap the decoder in a cool class. DONE
