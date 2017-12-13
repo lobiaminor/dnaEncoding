@@ -10,6 +10,7 @@ import matplotlib.image as img
 import matplotlib.pyplot as plt
 import wavelets as wv
 from PIL import Image
+import matplotlib.cm as cm
 
 def main():
     # Read images from the image dir
@@ -23,10 +24,15 @@ def main():
 
     for filename in imagelist:
         image = img.imread(filename)
-        image = image.copy()
+        #image = image.copy()
 
-        transformed = wv.iwtn(image, 3) #db.fwt97_2d(image, 3)
-        
+        #transformed = wv.iwtn(image, 3) #db.fwt97_2d(image, 3)
+
+        transformed = db.fwt97_2d(np.array(image, dtype=np.int64), 3)
+        imgplot = plt.imshow(transformed, cmap=cm.gray)
+        plt.show()
+
+
         # name = filename.split("/")[-1].split(".")[0]
         # name = name + "_encoded.txt"
 
@@ -43,7 +49,11 @@ def main():
         #     for s in encoded:
         #         f.write(str(s))
 
-        result = wv.iiwtn(decoded, 3) #db.iwt97_2d(decoded, 3)
+        #result = wv.iiwtn(decoded, 3)
+        result = db.iwt97_2d(decoded, 3)
+        imgplot = plt.imshow(result, cmap=cm.gray)
+        plt.gray()
+        plt.show()
 
         # Calculate and print qbpp (qbits/px)
         qbpp = len(encoded)/(image.shape[0]*image.shape[1])
