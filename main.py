@@ -22,7 +22,7 @@ def main():
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
-    for filename in imagelist:
+    for filename in imagelist[5:6]:
         image = img.imread(filename)
         #image = image.copy()
 
@@ -33,6 +33,13 @@ def main():
         plt.show()
 
 
+<<<<<<< HEAD
+=======
+        transformed = wv.iwtn(image, 3) #db.fwt97_2d(image, 3)
+        
+        scanned = scanning(get_subbands(transformed, 3))
+        print("Scanned length = {}".format(len(scanned)))
+>>>>>>> b217730c14885a295f5baf14c9671f17e9aa923f
         # name = filename.split("/")[-1].split(".")[0]
         # name = name + "_encoded.txt"
 
@@ -40,10 +47,12 @@ def main():
         sr_enc = sr_encoder.StackRunEncoder(sym)
         sr_dec = sr_decoder.StackRunDecoder(sym)
 
-        encoded, runs, stacks = sr_enc.encode(transformed.flatten())  
+        encoded, runs, stacks = sr_enc.encode(scanned)  
         decoded = sr_dec.decode(encoded)
-
-        decoded = np.reshape(decoded, transformed.shape)
+        print("Decoded length = {}".format(len(decoded)))
+        decoded = reconstruct_subbands(unscanning(decoded, 3))
+        print(decoded.shape)
+        #decoded = np.reshape(decoded, transformed.shape)
 
         # with open(name,'w') as f:
         #     for s in encoded:
@@ -65,9 +74,9 @@ def main():
         print("Entropy = {} nats/symbol".format(entropy(runs, stacks)))
 
         # Show the image
-        # plt.imshow(result)
-        # plt.gray()
-        # plt.show()
+        plt.imshow(result)
+        plt.gray()
+        plt.show()
 
 
 def entropy(runs, stacks):
@@ -112,8 +121,151 @@ def entropy_single(image):
 
     return -entropy
 
+
+def get_subbands(image, n):
+    """ Given a matrix representing the n-levels decomposition of an image,
+    returns a list of its subbands. The ordering is as follows:
+    -----------------
+    | 0 | 1 |       | (Starting from the LL, subbands are ordered by
+    |--------   4   |  level, clockwise)
+    | 3 | 2 |       |
+    |---------------|
+    |       |       | 
+    |   6   |   5   |
+    |       |       |
+    -----------------
+
+    Be careful, the returned subbands are views of the original matrix. That
+    means they will be modified if the original image changes.
+
+    Params:
+    - image: numpy matrix representing the image (square matrix)
+    - n: number of decomposition levels
+
+    Square images only!
+    """
+    # To make it work for non-square images, take width/height instead of
+    # only side
+    side = image.shape[0]
+    
+    # LL
+    subbands = []
+    end = side//pow(2, n)
+    subbands.append(image[0:end,0:end])
+
+    # For each decomposition level, extract the subbands, clockwise
+    for i in reversed(range(n)):
+        start = side//pow(2, i+1)
+        end   = 2*start
+        
+        subbands.append(image[start:end, 0:start]) 
+        subbands.append(image[start:end, start:end])
+        subbands.append(image[0:start,   start:end])
+
+    return subbands
+
+
+def reconstruct_subbands(subbands):
+    """Given the array of subbands, reconstructs the original matrix.
+    The ordering of the subbands is assumed to be the same one described in the
+    get_subbands method.
+
+    Square images only!
+    """
+    # Last subband is half the size of the original image
+    side = len(subbands[-1])*2
+    image = np.zeros(shape=(side,side))
+
+    # There are three subbands per decomposition level
+    n = (len(subbands)-1)//3 
+
+    # Add the LL
+    end = side//pow(2, n)
+    print("End:{}".format(end))
+    image[0:end, 0:end] = subbands[0]
+
+    for i in reversed(range(n)):
+        start = side//pow(2, i+1)
+        end   = 2*start
+        idx = n - i - 1
+
+        image[start:end, 0:start]  = subbands[3*idx + 1]
+        image[start:end, start:end]= subbands[3*idx + 2]
+        image[0:start, start:end]  = subbands[3*idx + 3]
+
+    return image
+
+
+def scanning(subbands):
+    """ Given the array of subbands, scans through each one of them in 
+    the corresponding direction and returns a 1D array.
+    """
+    # 1. Scan the LL
+    result = subbands[0].flatten()
+    
+    # 2. Scan the rest of subbands
+    for i, band in enumerate(subbands[1:]):
+        print(i)
+        # Upper right
+        if i % 3 == 1:
+            result = np.concatenate((result, band.flatten()))
+        # Diagonal
+        elif i % 3 == 2:
+            result = np.concatenate((result, band.flatten()))
+        # Lower left
+        elif i % 3 == 0:
+            result = np.concatenate((result, band.T.flatten()))
+
+    return result
+
+
+def unscanning(array, n):
+    """ Given the 1D array representing the transformed image, reconstructs
+    its original shape (undoes the scanning).
+    
+    Params:
+    - array: numpy array (1D) representing the transformed image
+    - n: number of decomposition levels
+
+    Square images only!
+    """
+
+    # Original image's dimensions
+    side = int(np.sqrt(len(array)))
+
+    # 1. Retrieve the LL
+    side_ll = side // pow(2, n)
+    last = pow(side_ll,2) # Last element of the array that was analyzed 
+    ll = np.reshape(array[0:last], (side_ll, side_ll))
+
+    subbands = []
+    subbands.append(ll)
+
+    # 2. Retrieve the rest of the subbands
+    for i in reversed(range(n)):
+        band_side = side//pow(2, i+1)
+        # Using [1,3] for consistency with the numbering in the scanning method
+        for j in range(3):
+            band_array = array[last:last+pow(band_side,2)]
+            last = last+pow(band_side,2)
+            # Upper right
+            if   j % 3 == 1: 
+                band = np.reshape(band_array, (band_side, band_side))
+            # Diagonal
+            elif j % 3 == 2:
+                band = np.reshape(band_array, (band_side, band_side))
+            # Lower left
+            elif j % 3 == 0:
+                band = np.reshape(band_array, (band_side, band_side)).T
+            # Append it to the array of subbands
+            subbands.append(band)
+
+    return subbands
+
+
 if __name__ == "__main__":
     main()
+
 
 # By rows
 # a.flatten()
