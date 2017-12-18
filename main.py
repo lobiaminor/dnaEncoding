@@ -21,12 +21,14 @@ def main():
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
-    for filename in imagelist:
+    for filename in imagelist[5:6]:
         image = img.imread(filename)
         image = image.copy()
 
         transformed = wv.iwtn(image, 3) #db.fwt97_2d(image, 3)
         
+        scanned = scanning(get_subbands(transformed, 3))
+        print("Scanned length = {}".format(len(scanned)))
         # name = filename.split("/")[-1].split(".")[0]
         # name = name + "_encoded.txt"
 
@@ -34,10 +36,12 @@ def main():
         sr_enc = sr_encoder.StackRunEncoder(sym)
         sr_dec = sr_decoder.StackRunDecoder(sym)
 
-        encoded, runs, stacks = sr_enc.encode(transformed.flatten())  
+        encoded, runs, stacks = sr_enc.encode(scanned)  
         decoded = sr_dec.decode(encoded)
-
-        decoded = np.reshape(decoded, transformed.shape)
+        print("Decoded length = {}".format(len(decoded)))
+        decoded = reconstruct_subbands(unscanning(decoded, 3))
+        print(decoded.shape)
+        #decoded = np.reshape(decoded, transformed.shape)
 
         # with open(name,'w') as f:
         #     for s in encoded:
@@ -55,9 +59,9 @@ def main():
         print("Entropy = {} nats/symbol".format(entropy(runs, stacks)))
 
         # Show the image
-        # plt.imshow(result)
-        # plt.gray()
-        # plt.show()
+        plt.imshow(result)
+        plt.gray()
+        plt.show()
 
 
 def entropy(runs, stacks):
@@ -102,9 +106,6 @@ def entropy_single(image):
 
     return -entropy
 
-if __name__ == "__main__":
-    main()
-
 
 def get_subbands(image, n):
     """ Given a matrix representing the n-levels decomposition of an image,
@@ -144,7 +145,7 @@ def get_subbands(image, n):
         
         subbands.append(image[start:end, 0:start]) 
         subbands.append(image[start:end, start:end])
-        subbands.append(image[0:start, start:end])
+        subbands.append(image[0:start,   start:end])
 
     return subbands
 
@@ -157,14 +158,15 @@ def reconstruct_subbands(subbands):
     Square images only!
     """
     # Last subband is half the size of the original image
-    side = len(subbands[-1])*2 
-    image = np.zeros(shape=(size,size))
+    side = len(subbands[-1])*2
+    image = np.zeros(shape=(side,side))
 
     # There are three subbands per decomposition level
     n = (len(subbands)-1)//3 
 
     # Add the LL
-    end = size//pow(2, n)
+    end = side//pow(2, n)
+    print("End:{}".format(end))
     image[0:end, 0:end] = subbands[0]
 
     for i in reversed(range(n)):
@@ -187,7 +189,8 @@ def scanning(subbands):
     result = subbands[0].flatten()
     
     # 2. Scan the rest of subbands
-    for i, band in enumerate(subbands):
+    for i, band in enumerate(subbands[1:]):
+        print(i)
         # Upper right
         if i % 3 == 1:
             result = np.concatenate((result, band.flatten()))
@@ -227,11 +230,11 @@ def unscanning(array, n):
     for i in reversed(range(n)):
         band_side = side//pow(2, i+1)
         # Using [1,3] for consistency with the numbering in the scanning method
-        for j in range(1,4):
+        for j in range(3):
             band_array = array[last:last+pow(band_side,2)]
             last = last+pow(band_side,2)
             # Upper right
-            if j % 3 == 1: 
+            if   j % 3 == 1: 
                 band = np.reshape(band_array, (band_side, band_side))
             # Diagonal
             elif j % 3 == 2:
@@ -244,6 +247,9 @@ def unscanning(array, n):
 
     return subbands
 
+
+if __name__ == "__main__":
+    main()
 
 
 # By rows
