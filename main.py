@@ -22,7 +22,7 @@ def main():
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
-    for filename in imagelist[5:6]:
+    for filename in imagelist[1:2]:
         image = img.imread(filename)
         #image = image.copy()
 
@@ -31,15 +31,8 @@ def main():
         transformed = db.fwt97_2d(np.array(image, dtype=np.int64), 3)
         imgplot = plt.imshow(transformed, cmap=cm.gray)
         plt.show()
-
-
-<<<<<<< HEAD
-=======
-        transformed = wv.iwtn(image, 3) #db.fwt97_2d(image, 3)
         
         scanned = scanning(get_subbands(transformed, 3))
-        print("Scanned length = {}".format(len(scanned)))
->>>>>>> b217730c14885a295f5baf14c9671f17e9aa923f
         # name = filename.split("/")[-1].split(".")[0]
         # name = name + "_encoded.txt"
 
