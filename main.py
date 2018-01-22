@@ -21,14 +21,14 @@ def main():
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
-    for filename in imagelist[5:6]:
+    for filename in imagelist:
         image = img.imread(filename)
         image = image.copy()
 
         transformed = wv.iwtn(image, 3) #db.fwt97_2d(image, 3)
         
         scanned = scanning(get_subbands(transformed, 3))
-        print("Scanned length = {}".format(len(scanned)))
+
         # name = filename.split("/")[-1].split(".")[0]
         # name = name + "_encoded.txt"
 
@@ -38,9 +38,9 @@ def main():
 
         encoded, runs, stacks = sr_enc.encode(scanned)  
         decoded = sr_dec.decode(encoded)
-        print("Decoded length = {}".format(len(decoded)))
+
         decoded = reconstruct_subbands(unscanning(decoded, 3))
-        print(decoded.shape)
+
         #decoded = np.reshape(decoded, transformed.shape)
 
         # with open(name,'w') as f:
@@ -59,9 +59,9 @@ def main():
         print("Entropy = {} nats/symbol".format(entropy(runs, stacks)))
 
         # Show the image
-        plt.imshow(result)
-        plt.gray()
-        plt.show()
+        # plt.imshow(result)
+        # plt.gray()
+        # plt.show()
 
 
 def entropy(runs, stacks):
@@ -107,16 +107,21 @@ def entropy_single(image):
     return -entropy
 
 
+# MSE
+def calc_MSE(original, quantized):
+    return (np.square(original - quantized)).mean(axis=None)
+
+
 def get_subbands(image, n):
     """ Given a matrix representing the n-levels decomposition of an image,
     returns a list of its subbands. The ordering is as follows:
     -----------------
-    | 0 | 1 |       | (Starting from the LL, subbands are ordered by
-    |--------   4   |  level, clockwise)
-    | 3 | 2 |       |
+    |-1 | 0 |       | (Starting from the LL, subbands are ordered by
+    |--------   3   |  level, clockwise)
+    | 2 | 1 |       |
     |---------------|
     |       |       | 
-    |   6   |   5   |
+    |   5   |   4   |
     |       |       |
     -----------------
 
@@ -166,7 +171,7 @@ def reconstruct_subbands(subbands):
 
     # Add the LL
     end = side//pow(2, n)
-    print("End:{}".format(end))
+
     image[0:end, 0:end] = subbands[0]
 
     for i in reversed(range(n)):
@@ -190,15 +195,14 @@ def scanning(subbands):
     
     # 2. Scan the rest of subbands
     for i, band in enumerate(subbands[1:]):
-        print(i)
         # Upper right
-        if i % 3 == 1:
-            result = np.concatenate((result, band.flatten()))
+        if   i % 3 == 0:
+            result = np.concatenate((result, band.T.flatten()))
         # Diagonal
-        elif i % 3 == 2:
-            result = np.concatenate((result, band.flatten()))
+        elif i % 3 == 1:
+            result = np.concatenate((result, band.T.flatten()))
         # Lower left
-        elif i % 3 == 0:
+        elif i % 3 == 2:
             result = np.concatenate((result, band.T.flatten()))
 
     return result
@@ -234,13 +238,13 @@ def unscanning(array, n):
             band_array = array[last:last+pow(band_side,2)]
             last = last+pow(band_side,2)
             # Upper right
-            if   j % 3 == 1: 
-                band = np.reshape(band_array, (band_side, band_side))
+            if   j % 3 == 0: 
+                band = np.reshape(band_array, (band_side, band_side)).T
             # Diagonal
-            elif j % 3 == 2:
-                band = np.reshape(band_array, (band_side, band_side))
+            elif j % 3 == 1:
+                band = np.reshape(band_array, (band_side, band_side)).T
             # Lower left
-            elif j % 3 == 0:
+            elif j % 3 == 2:
                 band = np.reshape(band_array, (band_side, band_side)).T
             # Append it to the array of subbands
             subbands.append(band)

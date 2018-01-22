@@ -16,22 +16,29 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 
 5. Interpreting the entropy: higher value is better? (max is 1 -> log4(4))
 
-# To-do list
+# Done list
 
 1- Put together encoder/decoder and transforms: scanning
 2- Comparing different scanning and encoding: compare the results of scanning row-wise, col-wise and hybrid scheme (and decide what to do with the HH subbands). 
 3- Start the report 
 4- Plot comparison of using different levels of haar decomposition
-5- Try also daub. 5/3 lifting(2,2)
-6- Quaternary huffman
-7- Scan by subbands and provide the results of each single subband (3 levels is fine) HIGH PRIORITY
-
-Jose
 - Wrap the decoder in a cool class. DONE
+5- Scan by subbands and provide the results of each single subband (3 levels is fine) HIGH PRIORITY
+
+
+# To-do list
+
+7- Try also daub. 5/3 lifting(2,2)
+8- Figures: CDF entropy vs decomposition levels, 
+9- Tables:  CDF results
+10- Results section: comment some stats of the output files
+
+# Not necessary anymore
+
+6- Quaternary huffman
 
 
 Both
-- Start with the report (it will be awesome)
 - Comment the iwt methods properly
 - Git Ignore __pycache__
 
