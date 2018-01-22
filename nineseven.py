@@ -52,8 +52,8 @@ def iwt97_2d(m, nlevels=1):
         w /= 2
 
     for i in range(nlevels):
-        m = iwt97(m, w, h) # rows
-        m = iwt97(m, w, h) # cols
+        m = iwt97(m.astype(int), w, h) # rows
+        m = iwt97(m.astype(int), w, h) # cols
         h *= 2
         w *= 2
 
@@ -141,8 +141,8 @@ def iwt97(s, width, height):
         for row in range(height):
             # k1 and k2 scale the vals
             # simultaneously transpose the matrix when interleaving
-            temp_bank[col * 2][row] = k1 * s[row][col]
-            temp_bank[col * 2 + 1][row] = k2 * s[row][col + width//2]
+            temp_bank[col * 2][row] = s[row][col] * k1
+            temp_bank[col * 2 + 1][row] = s[row][col + width//2] * k2
 
     # write temp_bank to s:
     for row in range(width):

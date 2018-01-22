@@ -28,11 +28,8 @@ def main():
         entropies = []
 
         for n in range(9):
-
-            transformed = wv.iwtn(image, n) #db.fwt97_2d(image, 3)
+            transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
             
-            # name = filename.split("/")[-1].split(".")[0]
-            # name = name + "_encoded.txt"
 
             sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
             sr_enc = sr_encoder.StackRunEncoder(sym)
@@ -43,30 +40,17 @@ def main():
 
             decoded = np.reshape(decoded, transformed.shape)
 
-            # with open(name,'w') as f:
-            #     for s in encoded:
-            #         f.write(str(s))
-
-            result = wv.iiwtn(decoded, n) #db.iwt97_2d(decoded, 3)
-
             # Calculate and print qbpp (qbits/px)
             qbpp = len(encoded)/(image.shape[0]*image.shape[1])
             entropies.append(entropy(runs, stacks))
 
         # Measure entropy
-        print(filename)
-        print("qbits/px = {}".format(qbpp))
-        print("OG Entropy = {}".format(entropy_single(image)))
-        print("Entropy = {} nats/symbol".format(entropy(runs, stacks)))
+        print(entropies)
 
         plt.plot(range(9), entropies)
         plt.ylabel("Entropy (nats/sym)")
         plt.xlabel("Number of decomposition levels")
         plt.show()
-        # Show the image
-        # plt.imshow(result)
-        # plt.gray()
-        # plt.show()
 
 
 def entropy(runs, stacks):
