@@ -22,14 +22,16 @@ def main():
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
+    # Number of decomposition levels
+    n = 3
+
     for filename in imagelist:
         image = img.imread(filename)
         #image = image.copy()
 
-        #transformed = db.fwt97_2d(np.array(image, dtype=np.int64), 3)
-        transformed = wv.iwtn(image, 3) #db.fwt97_2d(image, 3)
-        
-        scanned = scanning(get_subbands(transformed, 4))
+        #transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
+        transformed = wv.iwtn(image, n) #db.fwt97_2d(image, 3)
+        scanned = scanning(get_subbands(transformed, n))
 
         sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
         sr_enc = sr_encoder.StackRunEncoder(sym)
@@ -38,7 +40,7 @@ def main():
         encoded, runs, stacks = sr_enc.encode(scanned)  
         decoded = sr_dec.decode(encoded)
 
-        decoded = reconstruct_subbands(unscanning(decoded, 4))
+        decoded = reconstruct_subbands(unscanning(decoded, n))
 
         # Saving to file
         # name = filename.split("/")[-1].split(".")[0]
@@ -47,8 +49,8 @@ def main():
         #     for s in encoded:
         #         f.write(str(s))
 
-        result = wv.iiwtn(decoded, 3)
-        #result = db.iwt97_2d(decoded, 3)
+        result = wv.iiwtn(decoded, n)
+        #result = db.iwt97_2d(decoded, n)
 
         # Calculate and print qbpp (qbits/px)
         qbpp = len(encoded)/(image.shape[0]*image.shape[1])
