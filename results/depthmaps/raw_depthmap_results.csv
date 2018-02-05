@@ -1,0 +1,72 @@
+./DepthMaps/elephant-1024x1024-DepthCamera_9-originalDepthMap.dat
+bpp = 88.07695007324219
+qbits/px = 3.046154022216797
+OG entropy = 2.1350859043582773
+Encoded entropy = 1.377150323052498
+Entropy = 4.556350823797392 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_4-originalDepthMap.dat
+bpp = 88.13566589355469
+qbits/px = 2.2852487564086914
+OG entropy = 1.6066689917715926
+Encoded entropy = 1.373960567572331
+Entropy = 4.50403906846895 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_6-originalDepthMap.dat
+bpp = 88.0078125
+qbits/px = 2.5880374908447266
+OG entropy = 1.914196152315374
+Encoded entropy = 1.3925663880002694
+Entropy = 4.4827899571908025 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_2-originalDepthMap.dat
+bpp = 88.0078125
+qbits/px = 3.0885000228881836
+OG entropy = 2.3442281201467763
+Encoded entropy = 1.4000170745102778
+Entropy = 4.409734023883717 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_10-originalDepthMap.dat
+bpp = 88.0078125
+qbits/px = 2.995285987854004
+OG entropy = 2.1706562781460073
+Encoded entropy = 1.38725524409552
+Entropy = 4.529263943021054 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_3-originalDepthMap.dat
+bpp = 88.06541442871094
+qbits/px = 3.4743566513061523
+OG entropy = 2.377652657249601
+Encoded entropy = 1.3729734355121745
+Entropy = 4.604065070552998 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_8-originalDepthMap.dat
+bpp = 88.0078125
+qbits/px = 3.2699012756347656
+OG entropy = 2.2986606151310793
+Encoded entropy = 1.380524315703521
+Entropy = 4.530938844962315 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_11-originalDepthMap.dat
+bpp = 88.06262969970703
+qbits/px = 2.7964296340942383
+OG entropy = 1.975737590321351
+Encoded entropy = 1.3781196328382284
+Entropy = 4.555233684646098 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_0-originalDepthMap.dat
+bpp = 87.99989318847656
+qbits/px = 2.72125244140625
+OG entropy = 1.9452062441447526
+Encoded entropy = 1.383001621996836
+Entropy = 4.500133598461028 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_1-originalDepthMap.dat
+bpp = 88.0078125
+qbits/px = 3.6445016860961914
+OG entropy = 2.6647208217785683
+Encoded entropy = 1.3859914506184876
+Entropy = 4.496355847224293 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_5-originalDepthMap.dat
+bpp = 88.26243591308594
+qbits/px = 3.8363561630249023
+OG entropy = 2.546179681435369
+Encoded entropy = 1.3571637180805984
+Entropy = 4.626198297398036 Shannon/symbol
+./DepthMaps/elephant-1024x1024-DepthCamera_7-originalDepthMap.dat
+bpp = 88.4742660522461
+qbits/px = 3.5647287368774414
+OG entropy = 2.295153658454437
+Encoded entropy = 1.3473601483444573
+Entropy = 4.633437376650687 Shannon/symbol

@@ -21,36 +21,35 @@ def main():
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
 
-    for filename in imagelist[4:5]:
+    entropies = np.zeros(8)
+    for filename in imagelist:
         image = img.imread(filename)
         image = image.copy()
         
-        entropies = []
-
-        for n in range(9):
+        for n in range(1,9):
             transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
-            
 
             sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
             sr_enc = sr_encoder.StackRunEncoder(sym)
             sr_dec = sr_decoder.StackRunDecoder(sym)
 
             encoded, runs, stacks = sr_enc.encode(transformed.flatten())  
-            decoded = sr_dec.decode(encoded)
+            # decoded = sr_dec.decode(encoded)
 
-            decoded = np.reshape(decoded, transformed.shape)
+            # decoded = np.reshape(decoded, transformed.shape)
 
             # Calculate and print qbpp (qbits/px)
             qbpp = len(encoded)/(image.shape[0]*image.shape[1])
-            entropies.append(entropy(runs, stacks))
+            entropies[n-1] = entropies[n-1] + (entropy(runs, stacks))
 
-        # Measure entropy
-        print(entropies)
+    # Measure entropy
+    entropies = entropies/len(imagelist)
+    print(entropies)
 
-        plt.plot(range(9), entropies)
-        plt.ylabel("Entropy (nats/sym)")
-        plt.xlabel("Number of decomposition levels")
-        plt.show()
+    plt.plot(range(1,9), entropies)
+    plt.ylabel("Entropy (nats/sym)")
+    plt.xlabel("Number of decomposition levels")
+    plt.show()
 
 
 def entropy(runs, stacks):

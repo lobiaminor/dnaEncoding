@@ -24,18 +24,30 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 4- Plot comparison of using different levels of haar decomposition
 - Wrap the decoder in a cool class. DONE
 5- Scan by subbands and provide the results of each single subband (3 levels is fine) HIGH PRIORITY
+8- Figures: CDF entropy vs decomposition levels: comment it
+9- Tables:  CDF results vs Haar comment it
+10- Results section: comment some stats of the output files
+12- Finish changing Melpo's suggestions (starting on 1.1)
 
 
 # To-do list
 
-7- Try also daub. 5/3 lifting(2,2)
-8- Figures: CDF entropy vs decomposition levels, 
-9- Tables:  CDF results
-10- Results section: comment some stats of the output files
+10B- Comment the number of stacks/number of runs and their average lengths
+11- Finish the introduction
+
+13- Conclusion & implementation (this will be more like a fancy readme/instructions on how to use the code)
+14- Slides
+15- Add CDF 9/7 (not integer to integer) and quantization afterwards. For the quantizer: diff quant step for each level of subbands (set as a parameter)
+
+Depth maps:
+- Check some stats on the transformed images (entropy before applying SR - weighted per subband)
+- Add log4 entropy to results as well (to compare both)
+- Resulting bitrate (calculate number of bits necessary)
 
 # Not necessary anymore
 
 6- Quaternary huffman
+7- Try also daub. 5/3 lifting(2,2)
 
 
 Both
@@ -63,6 +75,9 @@ http://www.olhovsky.com/2009/03/2d-cdf-97-wavelet-transform-in-python/
 - Images for testing:
 	http://www.imageprocessingplace.com/downloads_V3/root_downloads/image_databases/standard_test_images.zip
 	*convert to jpg: mogrify -format jpg *.tif
+
+
+https://stackoverflow.com/questions/5049984/cdf-9-7-discrete-wavelet-transform-convolution
 
 COST / TIME / 
 Take into account: Max 100 nucle per sequencing (add small delay after each 100)

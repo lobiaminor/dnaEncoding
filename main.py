@@ -11,13 +11,9 @@ import matplotlib.pyplot as plt
 import wavelets as wv
 from PIL import Image
 import matplotlib.cm as cm
+from skimage import color
 
 def main():
-    # Read images from the image dir
-    # img_src = "img_original/{}.jpg".format(sys.argv[1])
-    # dirname = os.path.dirname(__file__)
-    # filename = os.path.join(dirname, img_src)
-    
     # Find all .jpg images in the img_original dir
     imgdir = "./img/"
     imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
@@ -26,11 +22,12 @@ def main():
     n = 3
 
     for filename in imagelist:
-        image = img.imread(filename)
+        #image = color.rgb2gray(img.imread(filename))
         #image = image.copy()
+        image = readData(filename)
 
         #transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
-        transformed = wv.iwtn(image, n) #db.fwt97_2d(image, 3)
+        transformed = wv.iwtn(image, n)
         scanned = scanning(get_subbands(transformed, n))
 
         sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
@@ -44,7 +41,7 @@ def main():
 
         # Saving to file
         # name = filename.split("/")[-1].split(".")[0]
-        # name = name + "_encoded.txt"
+        # name = "results/depthmaps/" + name + "_encoded.txt"
         # with open(name,'w') as f:
         #     for s in encoded:
         #         f.write(str(s))
@@ -57,34 +54,55 @@ def main():
 
         # Measure entropy
         print(filename)
+        #bpp = int(os.stat(filename).st_size)*8/(image.shape[0]*image.shape[1])
+        #print("bpp = {}".format(bpp))
         print("qbits/px = {}".format(qbpp))
-        print("OG Entropy = {}".format(entropy_single(image)))
-        print("Entropy = {} nats/symbol".format(entropy(runs, stacks)))
+        print("OG entropy = {}".format(entropy_single(image)))
+        print("Encoded entropy = {}".format(entropy_single(np.asarray(encoded), base=2)))
+        print("Entropy = {} Shannon/symbol".format(entropy(runs, stacks)))
 
         # Show the image
-        # plt.imshow(result)
+        # plt.imshow(transformed)
         # plt.gray()
         # plt.show()
 
 
-def entropy(runs, stacks):
-    # Normalize the freqs
+def readData(filename):
+    array = np.loadtxt(filename, np.int64)
+    #im = Image.fromarray(array, "I")
+    return array
+
+
+def entropy(runs, stacks, base=4):
+    '''Calculates the entropy of an encoded image, represented by two dictionaries 
+    containing the counts of the different sized stacks and runs respectively.
+
+    Params:
+        runs: dictionary where the keys represent run lengths and the values are their observed frequencies
+        stacks: dictionary where keys are stack sizes and values their observed frequencies'''
+
+    # To normalize the frequencies, first we need to obtain the total sum of the counts
     total = float(sum(runs.values()) + sum(stacks.values()))
 
+    # Calculate the entropy using the probabilities
     entropy = 0
-    
     for count in (list(runs.values()) + list(stacks.values())):
         if count != 0:
             norm = count/total
-            entropy += norm * np.math.log(norm, 4)
+            entropy -= norm * np.math.log(norm, base)
 
-    return -entropy
+    return entropy
 
 
 def get_symbol2freq(vals):
-    hist = {}
+    '''Given an array of symbols, returns a dictionary where the keys are those symbols and
+    the values are their counts.
+    
+    Params:
+        vals: array to be counted'''
 
     # Get the histogram
+    hist = {}
     for v in vals:
         if v in hist:
             hist[v] = hist[v] + 1
@@ -94,24 +112,37 @@ def get_symbol2freq(vals):
     return hist
 
 
-def entropy_single(image):
+def entropy_single(image, base=4):
+    '''Calculates the entropy of the image passed as parameter. 
+    
+    Params:
+        image:
+        base: base of the logarithm used for the calculations. Default is 4.'''
+    
+    # Get a dictionary with the relative frequencies of each of the symbols
+    # in image
     hist = get_symbol2freq(image.flatten()) 
 
-    # Normalize the freqs
+    # Normalize the frequencies
     total = float(sum(hist.values()))
 
+    # Calculate the entropy
     entropy = 0
-    
     for count in hist.values():
         if count != 0:
             norm = count/total
-            entropy += norm * np.math.log(norm, 4)
+            entropy -= norm * np.math.log(norm, base)
 
-    return -entropy
+    return entropy
 
 
-# MSE
 def calc_MSE(original, quantized):
+    '''Get the Mean Squared Error for a given image and the corresponding reference.
+    
+    Params:
+        original: reference, uncompressed image
+        quantized: image being tested'''
+
     return (np.square(original - quantized)).mean(axis=None)
 
 
@@ -219,7 +250,7 @@ def unscanning(array, n):
     - array: numpy array (1D) representing the transformed image
     - n: number of decomposition levels
 
-    Square images only!
+    Square images only! 
     """
 
     # Original image's dimensions
@@ -255,31 +286,37 @@ def unscanning(array, n):
     return subbands
 
 
+def quantize(vector, delta, minv=0, maxv=256):
+    ''' Quantizes a vector using a given quantization step
+    Params:
+        vector: vector to be quantized
+        delta: quantization step'''
+    
+    bins = np.linspace(minv, maxv, (abs(maxv - minv)/delta) + 1)
+    indexes = np.digitize(vector, bins)
+
+    return indexes
+
+def dequantize(indexes, delta, minv):
+    ''' Dequantizes a vector given the quantization step
+    Params:
+        indexes: vector of indexes to be dequantized
+        delta: quantization step
+        minv: minimum value of the original vector'''
+    result = []
+    for i in indexes:
+        result.append(i*delta - delta/2.0 + minv)
+
+    return result
+
+def quantize_image(matrix, delta):
+    ''' Quantize the image passed as parameter (it has to be a matrix)
+    Params:
+        matrix: numpy matrix representing the image
+        delta: quantization step'''
+    
+    return np.apply_along_axis(quantize, 1, matrix, delta, minv=matrix.min(), maxv=matrix.max())
+
+
 if __name__ == "__main__":
     main()
-
-
-# By rows
-# a.flatten()
-# By cols
-# a.T.flatten()
-# To reconstruct
-# np.reshape(a, (x,y)) -> with a -1 on the dimension we dont want to enforce
-# TODO: Scan through the img_original and encode it
-
-# # Testing stuff
-# sym = {"0":"A", "1":"T", "+":"C", "-":"G"} 
-# sr_enc = sr_encoder.StackRunEncoder(sym)
-# sr_dec = sr_decoder.StackRunDecoder(sym)
-
-# s = "0,0,0,0,0,1,0,0,0,25,0,0".split(",")
-# s = [int(x) for x in s]
-# s1 = s[:-2]
-# print(s)
-# print(s1)
-# a = sr_enc.encode(s)
-# a1 = sr_enc.encode(s1)
-# print(a)
-# print(a1)
-# b = sr_dec.decode(a)
-# print(b)

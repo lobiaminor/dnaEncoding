@@ -14,14 +14,6 @@ import matplotlib.image as img
 import matplotlib.pyplot as plt
 import numpy as np
 
-''' Example matrix as a list of lists: '''
-mat4x4 = [
-         [0,   1,  2,  3], # Row 1
-         [4,   5,  6,  7], # Row 2
-         [8,   9, 10, 11], # Row 3
-         [12, 13, 14, 15], # Row 4
-         ]                 # We don't do anything with this matrix.
-                           # It's just here for clarification.
 
 def fwt97_2d(m, nlevels=1):
     ''' Perform the CDF 9/7 transform on a 2D matrix signal m.
