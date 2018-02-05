@@ -32,12 +32,14 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 
 # To-do list
 
+
 10B- Comment the number of stacks/number of runs and their average lengths
 11- Finish the introduction
 
 13- Conclusion & implementation (this will be more like a fancy readme/instructions on how to use the code)
 14- Slides
 15- Add CDF 9/7 (not integer to integer) and quantization afterwards. For the quantizer: diff quant step for each level of subbands (set as a parameter)
+16- Change caption in entropy graphics for choosing the level of wavelet decomposition (nats/symbol -> shannon/symbol)
 
 Depth maps:
 - Check some stats on the transformed images (entropy before applying SR - weighted per subband)
