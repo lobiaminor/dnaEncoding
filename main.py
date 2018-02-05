@@ -14,40 +14,60 @@ import matplotlib.cm as cm
 from skimage import color
 
 def main():
-    # Find all .jpg images in the img_original dir
-    imgdir = "./img/"
-    imagelist = glob.glob(os.path.join(imgdir, "*.jpg"))
+    # Params
+    imgdir  = "./img/" # Directory where to look for the images
+    extension = "jpg"  # All files in the above directory with this extension will be processed
+    imagelist = glob.glob(os.path.join(imgdir, "*." + extension))
+
+    # Mode can be 'lossless' for lossless compression using integer to integer
+    # wavelet transforms or 'quantize', using regular wavelets followed by a quantizer
+    mode = "lossless"
+
+    # Output settings
+    save_results = False # When set to true, the encoded strings are saved as txt files
+    output_folder = "/results/depthmaps" # Directory where the txt files are to be stored
+    suffix = "_encoded.txt" # Suffix to be appended to the names of the output files
 
     # Number of decomposition levels
     n = 3
 
     for filename in imagelist:
-        #image = color.rgb2gray(img.imread(filename))
+        # Read the image
+        image = color.rgb2gray(img.imread(filename))
         #image = image.copy()
-        image = readData(filename)
+        #image = readData(filename)
 
-        #transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
-        transformed = wv.iwtn(image, n)
-        scanned = scanning(get_subbands(transformed, n))
-
+        # Initialize the Stack-Run encoder and decoder
         sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
         sr_enc = sr_encoder.StackRunEncoder(sym)
         sr_dec = sr_decoder.StackRunDecoder(sym)
+        
+        # Variables used to store the 
+        transformed = None
+        encoded = None
+        decoded = None
+        result = None
+        
+        if mode == "lossless":
+            #transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
+            transformed = wv.iwtn(image, n)
+            scanned = scanning(get_subbands(transformed, n))
 
-        encoded, runs, stacks = sr_enc.encode(scanned)  
-        decoded = sr_dec.decode(encoded)
+            encoded, runs, stacks = sr_enc.encode(scanned)  
+            decoded = sr_dec.decode(encoded)
 
-        decoded = reconstruct_subbands(unscanning(decoded, n))
+            decoded = reconstruct_subbands(unscanning(decoded, n))
 
-        # Saving to file
-        # name = filename.split("/")[-1].split(".")[0]
-        # name = "results/depthmaps/" + name + "_encoded.txt"
-        # with open(name,'w') as f:
-        #     for s in encoded:
-        #         f.write(str(s))
+            result = wv.iiwtn(decoded, n)
+            #result = db.iwt97_2d(decoded, n)
 
-        result = wv.iiwtn(decoded, n)
-        #result = db.iwt97_2d(decoded, n)
+        # Saving the encoded string to a file
+        if save_results:
+            name = os.path.basename(filename).split(".")[0] + suffix
+            name = os.path.join(output_folder, name) 
+            with open(name,'w') as f:
+                for s in encoded:
+                    f.write(str(s))
 
         # Calculate and print qbpp (qbits/px)
         qbpp = len(encoded)/(image.shape[0]*image.shape[1])
