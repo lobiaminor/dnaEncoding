@@ -11,25 +11,28 @@ import matplotlib.pyplot as plt
 import wavelets as wv
 from PIL import Image
 import matplotlib.cm as cm
+import configparser
 from skimage import color
 
 def main():
-    # Params
-    imgdir  = "./img/" # Directory where to look for the images
-    extension = "jpg"  # All files in the above directory with this extension will be processed
+    # Parsing input arguments from settings.ini
+    # For detailed description of the parameter, please refer to this settings.ini
+    Config = configparser.ConfigParser()
+    Config.read("settings.ini")
+
+    # Input parameters
+    imgdir = Config.get("input", "imgdir")
+    extension = Config.get("input", "extension")
+    n = int(Config.get("input", "n"))
+    mode = Config.get("input", "mode")
+
+    # Output parameters
+    save_results = bool(int(Config.get("output", "save_results")))
+    output_folder = Config.get("output", "output_folder")
+    suffix = Config.get("output", "suffix")
+
+    # Blob input images in a single list for easy recursion
     imagelist = glob.glob(os.path.join(imgdir, "*." + extension))
-
-    # Mode can be 'lossless' for lossless compression using integer to integer
-    # wavelet transforms or 'quantize', using regular wavelets followed by a quantizer
-    mode = "lossless"
-
-    # Output settings
-    save_results = False # When set to true, the encoded strings are saved as txt files
-    output_folder = "/results/depthmaps" # Directory where the txt files are to be stored
-    suffix = "_encoded.txt" # Suffix to be appended to the names of the output files
-
-    # Number of decomposition levels
-    n = 3
 
     for filename in imagelist:
         # Read the image
