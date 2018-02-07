@@ -47,7 +47,7 @@ def main():
         
         if mode == "lossless":
             # First, apply the selected wavelet transform to the image
-            #transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
+            transformed97 = db.fwt97_2d(np.array(image, dtype=np.int64), n)
             transformed = wv.iwtn(image, n)
 
             # Next, scan the transformed image to convert it to a 1D signal 
@@ -63,26 +63,29 @@ def main():
             # Apply the inverse of the previous wavelet transform to obtain the decompressed img
             result = wv.iiwtn(decoded, n)
             #result = db.iwt97_2d(decoded, n)
-
         elif mode == "quantize":
-            # Apply the selected wavelet transform to the image (this time it's not
+            # Apply the wavelet transform to the image (this time it's not 
             # integer to integer, but we'll quantize afterwards)
-            transformed = pywt.wavedec2(image, 'db9', level=n)
+            transformed = pywt.wavedec2(image, 'bior2.2', level=n)
 
-            # Next, scan the transformed image to convert it to a 1D signal 
-            scanned = scanning(get_subbands(transformed, n))
+            # Quantize each of the subbands with the appropriate quantization step 
+            quantized = transformed
+
+            # Next, scan the quantized image to convert it to a 1D signal 
+            scanned = scanning(get_subbands(quantized, n))
 
             # Apply the stack-run coding algorithm
             encoded, runs, stacks = sr_enc.encode(scanned)  
             
-            # Decode the image and reconstruct it so it becomes a 2D matrix again
+            # Decode the image and undo the scanning to obtain the transformed version again
             decoded = sr_dec.decode(encoded)
-            decoded = reconstruct_subbands(unscanning(decoded, n))
+            decoded = unscanning(decoded, n)
+
+            # Dequantize
+            dequantized = decoded
 
             # Apply the inverse of the previous wavelet transform to obtain the decompressed img
-            result = wv.iiwtn(decoded, n)
-            #result = db.iwt97_2d(decoded, n)
-
+            result = wv.iiwtn(dequantized, n)
         else:
             print("Incorrect 'mode' parameter, please input one of the possible options.")
             break
@@ -107,16 +110,29 @@ def main():
         print("Encoded entropy = {}".format(entropy_single(np.asarray(encoded), base=2)))
         print("Entropy = {} Shannon/symbol".format(entropy(runs, stacks)))
 
+        print("Haar_entropy = {}".format(entropy_by_subbands(transformed)))
+        print("CDF97_entropy = {}".format(entropy_by_subbands(transformed97)))
+
         # Show the image
-        plt.imshow(result)
-        plt.gray()
-        plt.show()
+        # plt.imshow(result)
+        # plt.gray()
+        # plt.show()
 
 
 def readData(filename):
     array = np.loadtxt(filename, np.int64)
     #im = Image.fromarray(array, "I")
     return array
+
+
+def entropy_by_subbands(subbands, base=2):
+    n = len(subbands) - 1
+    entropy = entropy_single(subbands[0], base=base) / pow(4, n)
+    
+    for i, band in enumerate(subbands[1:]):
+        entropy += entropy_single(band, base=base) / pow(4, n-i)
+
+    return entropy
 
 
 def entropy(runs, stacks, base=4):
@@ -140,7 +156,31 @@ def entropy(runs, stacks, base=4):
     return entropy
 
 
-def get_symbol2freq(vals):
+def entropy_single(image, base=4):
+    '''Calculates the entropy of the image passed as parameter. 
+    
+    Params:
+        image:
+        base: base of the logarithm used for the calculations. Default is 4.'''
+    
+    # Get a dictionary with the relative frequencies of each of the symbols
+    # in image
+    hist = histogram(image.flatten()) 
+
+    # Normalize the frequencies
+    total = float(sum(hist.values()))
+
+    # Calculate the entropy
+    entropy = 0
+    for count in hist.values():
+        if count != 0:
+            norm = count/total
+            entropy -= norm * np.math.log(norm, base)
+
+    return entropy
+
+
+def histogram(vals):
     '''Given an array of symbols, returns a dictionary where the keys are those symbols and
     the values are their counts.
     
@@ -156,30 +196,6 @@ def get_symbol2freq(vals):
             hist[v] = 1
 
     return hist
-
-
-def entropy_single(image, base=4):
-    '''Calculates the entropy of the image passed as parameter. 
-    
-    Params:
-        image:
-        base: base of the logarithm used for the calculations. Default is 4.'''
-    
-    # Get a dictionary with the relative frequencies of each of the symbols
-    # in image
-    hist = get_symbol2freq(image.flatten()) 
-
-    # Normalize the frequencies
-    total = float(sum(hist.values()))
-
-    # Calculate the entropy
-    entropy = 0
-    for count in hist.values():
-        if count != 0:
-            norm = count/total
-            entropy -= norm * np.math.log(norm, base)
-
-    return entropy
 
 
 def mse(original, decompressed):
