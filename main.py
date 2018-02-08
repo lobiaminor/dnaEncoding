@@ -1,8 +1,10 @@
+import glymur
 import os
 import sys
+import math
 import sr_decoder
 import sr_encoder
-# import pywt
+import pywt
 import nineseven as db
 import glob
 import numpy as np
@@ -36,9 +38,25 @@ def main():
 
     for filename in imagelist:
         # Read the image
-        image = color.rgb2gray(img.imread(filename))
+        #image = color.rgb2gray(img.imread(filename))
         #image = image.copy()
-        #image = readData(filename)
+        image = readData(filename)
+
+        # # Check if the image has appropriate dimensions
+        # # (square and sides are powers of 2)
+        width = image.shape[0]
+        height= image.shape[1]
+        
+        # # If it's rectangular, fill with zeros to make it square
+        # if(width != height):
+        #     diff = width - height
+        #     p = abs(diff)/2 # The amount of zeroes we need to add in each side
+        #     # Diff > 0, we need to pad the top and the bottom
+        #     if(diff > 0):
+        #         # np.pad (mode 'constant') adds zeros: (top, bottom)(left, right)
+        #         image = np.pad(image,((math.floor(p), math.ceil(p)),(0,0)), 'constant')
+        #     elif(diff < 0):
+        #         image = np.pad(image,((0,0),(math.floor(p), math.ceil(p))), 'constant')
 
         # Initialize the Stack-Run encoder and decoder
         sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
@@ -47,7 +65,7 @@ def main():
         
         if mode == "lossless":
             # First, apply the selected wavelet transform to the image
-            transformed97 = db.fwt97_2d(np.array(image, dtype=np.int64), n)
+            # transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
             transformed = wv.iwtn(image, n)
 
             # Next, scan the transformed image to convert it to a 1D signal 
@@ -62,17 +80,17 @@ def main():
 
             # Apply the inverse of the previous wavelet transform to obtain the decompressed img
             result = wv.iiwtn(decoded, n)
-            #result = db.iwt97_2d(decoded, n)
+            # result = db.iwt97_2d(decoded, n)
         elif mode == "quantize":
             # Apply the wavelet transform to the image (this time it's not 
             # integer to integer, but we'll quantize afterwards)
             transformed = pywt.wavedec2(image, 'bior2.2', level=n)
 
             # Quantize each of the subbands with the appropriate quantization step 
-            quantized = transformed
+            quantized, steps, mins = quantize_subbands(transformed)
 
             # Next, scan the quantized image to convert it to a 1D signal 
-            scanned = scanning(get_subbands(quantized, n))
+            scanned = scanning(quantized)
 
             # Apply the stack-run coding algorithm
             encoded, runs, stacks = sr_enc.encode(scanned)  
@@ -94,24 +112,27 @@ def main():
         if save_results:
             name = os.path.basename(filename).split(".")[0] + suffix
             name = os.path.join(output_folder, name) 
-            with open(name,'w') as f:
-                for s in encoded:
-                    f.write(str(s))
+            # with open(name,'w') as f:
+            #     for s in encoded:
+            #         f.write(str(s))
 
+            # Save as JPEG2000
+            glymur.Jp2k(name, image[:].astype(np.uint8),cratios=[0])
+            print("JPEG2000 size (bits) = {}".format(os.path.getsize(name)*8)) # getsize returns bytes
+
+        
         # Calculate and print qbpp (qbits/px)
         qbpp = len(encoded)/(image.shape[0]*image.shape[1])
 
         # Measure entropy
+        entropy_encoded = entropy_single(np.asarray(encoded), base=2)*len(encoded)/(width*height)
+        
         print(filename)
-        #bpp = int(os.stat(filename).st_size)*8/(image.shape[0]*image.shape[1])
-        #print("bpp = {}".format(bpp))
         print("qbits/px = {}".format(qbpp))
-        print("OG entropy = {}".format(entropy_single(image)))
-        print("Encoded entropy = {}".format(entropy_single(np.asarray(encoded), base=2)))
+        print("OG entropy = {}".format(entropy_single(image, base=2)))
+        print("Transformed entropy = {}".format(entropy_by_subbands(get_subbands(transformed, n))))
+        print("Encoded entropy = {}".format(entropy_encoded))
         print("Entropy = {} Shannon/symbol".format(entropy(runs, stacks)))
-
-        print("Haar_entropy = {}".format(entropy_by_subbands(transformed)))
-        print("CDF97_entropy = {}".format(entropy_by_subbands(transformed97)))
 
         # Show the image
         # plt.imshow(result)
@@ -124,13 +145,24 @@ def readData(filename):
     #im = Image.fromarray(array, "I")
     return array
 
+def is_power2(num):
+    '''States if a number is a power of two'''
+    return num != 0 and ((num & (num - 1)) == 0)
+
 
 def entropy_by_subbands(subbands, base=2):
+    '''Calculates the entropy of the transformed image passed as parameter. 
+    
+    Params:
+        subbands: array containing the coefficients of the subbands of the transformed image
+                  (same format as get_subbands is expected)
+        base: base of the logarithm used for the calculations. Default is 2.'''
     n = len(subbands) - 1
     entropy = entropy_single(subbands[0], base=base) / pow(4, n)
     
-    for i, band in enumerate(subbands[1:]):
-        entropy += entropy_single(band, base=base) / pow(4, n-i)
+    for i, bands in enumerate(subbands[1:]):
+        for band in bands:
+            entropy += entropy_single(band, base=base)/ pow(4, n-i)
 
     return entropy
 
@@ -365,6 +397,42 @@ def quantize(vector, delta, minv=0, maxv=256):
 
     return indexes
 
+
+def quantize_image(matrix, delta):
+    ''' Quantize the image passed as parameter (it has to be a matrix)
+    Params:
+        matrix: numpy matrix representing the image
+        delta: quantization step'''
+    
+    return np.apply_along_axis(quantize, 1, matrix, delta, minv=matrix.min(), maxv=matrix.max())
+
+
+def quantize_subbands(subbands):
+    quantized = []
+    steps = []
+    mins = []
+    # Quantization step is going to be 2^(n+2), where n is the decomposition level
+    n = len(subbands) - 1
+    steps.append((pow(2, n+2)))
+    mins.append(np.min(subbands[0]))
+
+    quantized.append(quantize_image(subbands[0], steps[0]))
+    
+    for i, bands in enumerate(subbands[1:]):
+        delta = pow(2, n-i+2)
+        steps.append(delta)
+        quantized.append((
+            quantize_image(bands[0], delta),
+            quantize_image(bands[1], delta),
+            quantize_image(bands[2], delta)))
+        mins.append((
+            np.min(bands[0]),
+            np.min(bands[1]),
+            np.min(bands[2])))
+
+    return quantized, steps, mins
+
+
 def dequantize(indexes, delta, minv):
     ''' Dequantizes a vector given the quantization step
     Params:
@@ -376,14 +444,6 @@ def dequantize(indexes, delta, minv):
         result.append(i*delta - delta/2.0 + minv)
 
     return result
-
-def quantize_image(matrix, delta):
-    ''' Quantize the image passed as parameter (it has to be a matrix)
-    Params:
-        matrix: numpy matrix representing the image
-        delta: quantization step'''
-    
-    return np.apply_along_axis(quantize, 1, matrix, delta, minv=matrix.min(), maxv=matrix.max())
 
 
 if __name__ == "__main__":
