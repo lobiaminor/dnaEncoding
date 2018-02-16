@@ -14,7 +14,7 @@ class StackRunDecoder(object):
     def decode(self, signal):
         """Decodes an incoming list of signal 
         Params:
-        bits: stack-run encoded image, represented by a list of bits
+        - signal: stack-run encoded image, represented by a list of bits
         """
         run_sym   = ["+", "-"]
         stack_sym = ["0", "1"]
@@ -42,7 +42,7 @@ class StackRunDecoder(object):
                     # Only decode the run if there is actually one (could be 0)
                     if len(current) > 0:
                         # Add as many zeros as the length of the run
-                        result.extend(["0"]*self.decode_run(current))
+                        result.extend([0]*self.decode_run(current))
                     # Clear the buffer
                     current.clear()
                     current.append(q)
@@ -61,7 +61,7 @@ class StackRunDecoder(object):
         
         # If there is something left on current, it means a run is yet to be decoded
         if current:
-            result.extend(["0"]*self.decode_run(current))
+            result.extend([0]*self.decode_run(current))
 
         return result
 
@@ -80,7 +80,7 @@ class StackRunDecoder(object):
         
         # Convert back to decimal
         bits = "".join(bits)
-        return sign * (int(bits, 2)-1)
+        return int(sign * (int(bits, 2)-1))
 
 
     def decode_run(self, bits):

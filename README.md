@@ -38,6 +38,10 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 16- Change caption in entropy graphics for choosing the level of wavelet decomposition (nats/symbol -> shannon/symbol)
 17- Quasi arithmetic coder?
 
+JOSE friday:
+- Quantizer: remove the minv shit and center it around zero
+- Inverse transform with pywt: there is something wrong at some point in the process which makes the final coeffs not compatible with waverec2, find it
+
 Depth maps:
 - Check some stats on the transformed images (entropy before applying SR - weighted per subband)
 - Add log4 entropy to results as well (to compare both)

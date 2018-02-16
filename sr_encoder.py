@@ -15,7 +15,7 @@ class StackRunEncoder(object):
         # the algorithm requires the number to be encoded + 1
         stack_value += 1
         # get the bit representation of the stack value (+1) and store each bit in list element
-        bit_rep = list("{0:b}".format(stack_value))
+        bit_rep = list("{0:b}".format(int(stack_value)))
         # substitute the most significant bit with its +/- representation
         bit_rep[0] = msb
         # invert the order of the obtained list

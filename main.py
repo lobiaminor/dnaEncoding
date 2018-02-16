@@ -38,9 +38,9 @@ def main():
 
     for filename in imagelist:
         # Read the image
-        #image = color.rgb2gray(img.imread(filename))
+        image = color.rgb2gray(img.imread(filename))
         #image = image.copy()
-        image = readData(filename)
+        #image = readData(filename)
 
         # # Check if the image has appropriate dimensions
         # # (square and sides are powers of 2)
@@ -76,7 +76,7 @@ def main():
             
             # Decode the image and reconstruct it so it becomes a 2D matrix again
             decoded = sr_dec.decode(encoded)
-            decoded = reconstruct_subbands(unscanning(decoded, n))
+            decoded = reconstruct_subbands(unscanning(decoded, n, width, height), width, height)
 
             # Apply the inverse of the previous wavelet transform to obtain the decompressed img
             result = wv.iiwtn(decoded, n)
@@ -84,7 +84,7 @@ def main():
         elif mode == "quantize":
             # Apply the wavelet transform to the image (this time it's not 
             # integer to integer, but we'll quantize afterwards)
-            transformed = pywt.wavedec2(image, 'bior2.2', level=n)
+            transformed = pywt.wavedec2(image, 'bior2.2', level=n, mode='periodization')
 
             # Quantize each of the subbands with the appropriate quantization step 
             quantized, steps, mins = quantize_subbands(transformed)
@@ -97,13 +97,24 @@ def main():
             
             # Decode the image and undo the scanning to obtain the transformed version again
             decoded = sr_dec.decode(encoded)
-            decoded = unscanning(decoded, n)
+            decoded = unscanning(decoded, n, width, height)
 
             # Dequantize
-            dequantized = decoded
+            dequantized = dequantize_subbands(decoded, steps, mins)
+
+            print("Transformed")
+            print(transformed[0].shape)
+            for a in transformed[1:]:
+                for b in a:
+                    print(b.shape)
+            print("dequant ")
+            print(dequantized[0].shape)
+            for a in dequantized[1:]:
+                for b in a:
+                    print(b.shape)
 
             # Apply the inverse of the previous wavelet transform to obtain the decompressed img
-            result = wv.iiwtn(dequantized, n)
+            result = pywt.waverec2(dequantized, 'bior2.2', mode='periodization')
         else:
             print("Incorrect 'mode' parameter, please input one of the possible options.")
             break
@@ -117,8 +128,8 @@ def main():
             #         f.write(str(s))
 
             # Save as JPEG2000
-            glymur.Jp2k(name, image[:].astype(np.uint8),cratios=[0])
-            print("JPEG2000 size (bits) = {}".format(os.path.getsize(name)*8)) # getsize returns bytes
+            #j = glymur.Jp2k(name, image[:].astype(np.uint8), cratios=[10])
+            #print("JPEG2000 size (bits) = {}".format(os.path.getsize(name)*8)) # getsize returns bytes
 
         
         # Calculate and print qbpp (qbits/px)
@@ -130,14 +141,17 @@ def main():
         print(filename)
         print("qbits/px = {}".format(qbpp))
         print("OG entropy = {}".format(entropy_single(image, base=2)))
-        print("Transformed entropy = {}".format(entropy_by_subbands(get_subbands(transformed, n))))
+        if mode == "lossless":
+            print("Transformed entropy = {}".format(entropy_by_subbands(get_subbands(transformed, n))))
+        elif mode == "quantize":
+            print("Transformed entropy = {}".format(entropy_by_subbands(transformed)))
         print("Encoded entropy = {}".format(entropy_encoded))
         print("Entropy = {} Shannon/symbol".format(entropy(runs, stacks)))
-
+        print("MSE = {}".format(mse(image, result)))
         # Show the image
-        # plt.imshow(result)
-        # plt.gray()
-        # plt.show()
+        plt.imshow(result)
+        plt.gray()
+        plt.show()
 
 
 def readData(filename):
@@ -288,32 +302,38 @@ def get_subbands(image, n):
     return subbands
 
 
-def reconstruct_subbands(subbands):
+def reconstruct_subbands(subbands, width, height):
     """Given the array of subbands, reconstructs the original matrix.
     The ordering of the subbands is assumed to be the same one described in the
     get_subbands method.
 
-    Square images only!
+    Params:
+        subbands: list containing the subbands, in the following way
+                  [cAn, (cHn, cVn, cDn), ... (cH1, cV1, cD1)] (see get_subbands)
+        width, height: dimensions of the original image
     """
-    # Last subband is half the size of the original image
-    side = len(subbands[-1][0])*2
-    image = np.zeros(shape=(side,side))
+
+    image = np.zeros(shape=(width, height))
 
     # There are len(subbands)-1 decomposition levels, because the LL is separated
     n = len(subbands)-1 
 
     # Add the LL
-    end = side//pow(2, n)
-    image[0:end, 0:end] = subbands[0]
+    end_h = width//pow(2, n)
+    end_v = height//pow(2, n)
+
+    image[0:end_h, 0:end_v] = subbands[0]
 
     for i in reversed(range(n)):
-        start = side//pow(2, i+1)
-        end   = 2*start
+        start_h = width//pow(2, i+1)
+        end_h   = 2*start_h
+        start_v = height//pow(2, i+1)
+        end_v   = 2*start_v
         idx = n - i
 
-        image[start:end, 0:start]  = subbands[idx][0]
-        image[0:start, start:end]  = subbands[idx][1]
-        image[start:end, start:end]= subbands[idx][2]
+        image[start_h:end_h, 0:start_v]    = subbands[idx][0]
+        image[0:start_h, start_v:end_v]    = subbands[idx][1]
+        image[start_h:end_h, start_v:end_v]= subbands[idx][2]
 
     return image
 
@@ -341,44 +361,44 @@ def scanning(subbands):
     return result
 
 
-def unscanning(array, n):
+def unscanning(array, n, width, height):
     """ Given the 1D array representing the transformed image, reconstructs
     its original shape (undoes the scanning).
     
     Params:
     - array: numpy array (1D) representing the transformed image
     - n: number of decomposition levels
-
-    Square images only! 
+    - width, height: dimensions of the original image
     """
 
-    # Original image's dimensions
-    side = int(np.sqrt(len(array)))
-
     # 1. Retrieve the LL
-    side_ll = side // pow(2, n)
-    last = pow(side_ll,2) # Last element of the array that was analyzed 
-    ll = np.reshape(array[0:last], (side_ll, side_ll))
+    width_ll = width // pow(2, n)
+    height_ll= height// pow(2, n)
+    
+    last = width_ll*height_ll # Last element of the array that was analyzed 
+    ll = np.reshape(array[0:last], (width_ll, height_ll))
 
     subbands = []
     subbands.append(ll)
 
     # 2. Retrieve the rest of the subbands
     for i in reversed(range(n)):
-        band_side = side//pow(2, i+1)
+        band_w = width//pow(2, i+1)
+        band_h = height//pow(2, i+1)
+        band_pixels = band_w*band_h # Number of px in each subband of this level
         level_bands = [] # Used to store the 3 subbands belonging to a level
         for j in range(3):
-            band_array = array[last:last+pow(band_side,2)]
-            last = last+pow(band_side,2) # After extracting each subband, we update this pointer
+            band_array = array[last:last+band_pixels]
+            last = last+band_pixels # After extracting each subband, we update this pointer
             # Upper right
             if   j % 3 == 0: 
-                level_bands.append(np.reshape(band_array, (band_side, band_side)).T)
+                level_bands.append(np.reshape(band_array, (band_w, band_h)).T)
             # Lower left
             elif j % 3 == 1:
-                level_bands.append(np.reshape(band_array, (band_side, band_side)).T)
+                level_bands.append(np.reshape(band_array, (band_w, band_h)).T)
             # Diagonal
             elif j % 3 == 2:
-                level_bands.append(np.reshape(band_array, (band_side, band_side)).T)
+                level_bands.append(np.reshape(band_array, (band_w, band_h)).T)
         
         # Append a tuple composed of the level's band to the array of subbands
         subbands.append((level_bands[0], level_bands[1], level_bands[2]))
@@ -392,13 +412,14 @@ def quantize(vector, delta, minv=0, maxv=256):
         vector: vector to be quantized
         delta: quantization step'''
     
-    bins = np.linspace(minv, maxv, (abs(maxv - minv)/delta) + 1)
-    indexes = np.digitize(vector, bins)
+    # bins = np.linspace(minv, maxv, (abs(maxv - minv)/delta) + 1)
+    # indexes = np.digitize(vector, bins)
+    # return indexes
 
-    return indexes
+    return np.round(vector/delta)
 
 
-def quantize_image(matrix, delta):
+def quantize_band(matrix, delta):
     ''' Quantize the image passed as parameter (it has to be a matrix)
     Params:
         matrix: numpy matrix representing the image
@@ -411,20 +432,21 @@ def quantize_subbands(subbands):
     quantized = []
     steps = []
     mins = []
+
     # Quantization step is going to be 2^(n+2), where n is the decomposition level
     n = len(subbands) - 1
-    steps.append((pow(2, n+2)))
+    steps.append(pow(2, n + 2))
     mins.append(np.min(subbands[0]))
 
-    quantized.append(quantize_image(subbands[0], steps[0]))
+    quantized.append(quantize_band(subbands[0], steps[0]))
     
     for i, bands in enumerate(subbands[1:]):
-        delta = pow(2, n-i+2)
+        delta = pow(2, n-i)
         steps.append(delta)
         quantized.append((
-            quantize_image(bands[0], delta),
-            quantize_image(bands[1], delta),
-            quantize_image(bands[2], delta)))
+            quantize_band(bands[0], delta),
+            quantize_band(bands[1], delta),
+            quantize_band(bands[2], delta)))
         mins.append((
             np.min(bands[0]),
             np.min(bands[1]),
@@ -439,11 +461,34 @@ def dequantize(indexes, delta, minv):
         indexes: vector of indexes to be dequantized
         delta: quantization step
         minv: minimum value of the original vector'''
-    result = []
-    for i in indexes:
-        result.append(i*delta - delta/2.0 + minv)
+    # result = []
+    # for i in indexes:
+    #     result.append(int(i)*delta - delta/2.0 + minv)
+    # return result
+    return indexes.astype(np.int64)*delta
 
-    return result
+def dequantize_band(matrix, delta, minv):
+    ''' Dequantize the subband passed as parameter (it has to be a matrix)
+    Params:
+        matrix: numpy matrix representing the quantized subband
+        delta: quantization step
+        min: minimum value in the original subband
+        '''
+    
+    return np.apply_along_axis(dequantize, 1, matrix, delta, minv)
+
+
+def dequantize_subbands(subbands, deltas, mins):
+    dequantized = []
+    dequantized.append(dequantize_band(subbands[0], deltas[0], mins[0]))
+    
+    for i, bands in enumerate(subbands[1:]):
+        dequantized.append((
+            dequantize_band(bands[0], deltas[i+1], mins[i+1][0]),
+            dequantize_band(bands[1], deltas[i+1], mins[i+1][1]),
+            dequantize_band(bands[2], deltas[i+1], mins[i+1][2])))
+        
+    return dequantized
 
 
 if __name__ == "__main__":
