@@ -82,8 +82,10 @@ def main():
             result = wv.iiwtn(decoded, n)
             # result = db.iwt97_2d(decoded, n)
         elif mode == "quantize":
-            # Apply the wavelet transform to the image (this time it's not 
-            # integer to integer, but we'll quantize afterwards)
+            # Apply the wavelet transform to the image 
+            # This time it's not integer to integer, but we'll quantize afterwards
+            # 'periodization' mode ensures that the coeffs have the minimum size, that is,
+            # submultiples of the original dimensions
             transformed = pywt.wavedec2(image, 'bior2.2', level=n, mode='periodization')
 
             # Quantize each of the subbands with the appropriate quantization step 
@@ -101,17 +103,6 @@ def main():
 
             # Dequantize
             dequantized = dequantize_subbands(decoded, steps)
-
-            print("Transformed")
-            print(transformed[0].shape)
-            for a in transformed[1:]:
-                for b in a:
-                    print(b.shape)
-            print("dequant ")
-            print(dequantized[0].shape)
-            for a in dequantized[1:]:
-                for b in a:
-                    print(b.shape)
 
             # Apply the inverse of the previous wavelet transform to obtain the decompressed img
             result = pywt.waverec2(dequantized, 'bior2.2', mode='periodization')
@@ -133,26 +124,28 @@ def main():
 
         
         # Calculate and print qbpp (qbits/px)
-        qbpp = len(encoded)/(image.shape[0]*image.shape[1])
+        sympp = len(encoded)/(image.shape[0]*image.shape[1])
 
         # Measure entropy
         entropy_encoded = entropy_single(np.asarray(encoded), base=2)*len(encoded)/(width*height)
         
         print(filename)
-        print("qbits/px = {}".format(qbpp))
-        print("OG entropy = {}".format(entropy_single(image, base=2)))
+        print("Symbols/px = {}".format(sympp))
+        print("Original image entropy = {}".format(entropy_single(image, base=2)))
         if mode == "lossless":
-            print("Transformed entropy = {}".format(entropy_by_subbands(get_subbands(transformed, n))))
+            print("Transformed image entropy = {}".format(entropy_by_subbands(get_subbands(transformed, n))))
         elif mode == "quantize":
-            print("Transformed entropy = {}".format(entropy_by_subbands(transformed)))
-        print("Encoded entropy = {}".format(entropy_encoded))
-        print("Entropy = {} Shannon/symbol".format(entropy(runs, stacks)))
+            # We are only interested in the entropy after quantization
+            # print("Transformed image entropy = {}".format(entropy_by_subbands(transformed)))
+            print("Quantized image entropy = {}".format(entropy_by_subbands(quantized)))
+        print("Encoded entropy = {} bits/pixel".format(entropy_encoded))
+        print("Encoded entropy (base 4) = {} Shannon/symbol".format(entropy(runs, stacks)))
         print("MSE = {}".format(mse(image, result)))
         
         # Show the image
-        plt.imshow(result)
-        plt.gray()
-        plt.show()
+        # plt.imshow(result)
+        # plt.gray()
+        # plt.show()
 
 
 def readData(filename):
@@ -445,7 +438,7 @@ def quantize_subbands(subbands, steps=False):
         n = len(subbands)
         for i in reversed(range(n)): 
             # Quant step is, for each level:
-            # 256 / n+2, n+1, n, n-1, ..., 4 
+            # 256 / n+3, n+2, n, ..., 4 
             steps.append(256.0/pow(2, (i+4)))
 
 

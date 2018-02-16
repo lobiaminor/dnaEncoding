@@ -28,19 +28,21 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 9- Tables:  CDF results vs Haar comment it
 10- Results section: comment some stats of the output files
 12- Finish changing Melpo's suggestions (starting on 1.1)
-
-
-# To-do list
 11- Finish the introduction
 13- Conclusion & implementation (this will be more like a fancy readme/instructions on how to use the code)
 14- Slides
 15- Add CDF 9/7 (not integer to integer) and quantization afterwards. For the quantizer: diff quant step for each level of subbands (set as a parameter)
-16- Change caption in entropy graphics for choosing the level of wavelet decomposition (nats/symbol -> shannon/symbol)
-17- Quasi arithmetic coder?
+- Quantizer: remove the minv shit and center it around zero DONE
+- Inverse transform with pywt: there is something wrong at some point in the process which makes the final coeffs not compatible with waverec2, find it DONE ALSO!
 
-JOSE friday:
-- Quantizer: remove the minv shit and center it around zero
-- Inverse transform with pywt: there is something wrong at some point in the process which makes the final coeffs not compatible with waverec2, find it
+# Future improvements section
+17- Quasi arithmetic coder?
+18- Quantization steps
+
+
+TODO:
+16- Change caption in entropy graphics for choosing the level of wavelet decomposition (nats/symbol -> shannon/symbol)
+17- Conclusions
 
 Depth maps:
 - Check some stats on the transformed images (entropy before applying SR - weighted per subband)
