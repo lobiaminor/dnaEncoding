@@ -87,7 +87,7 @@ def main():
             transformed = pywt.wavedec2(image, 'bior2.2', level=n, mode='periodization')
 
             # Quantize each of the subbands with the appropriate quantization step 
-            quantized, steps, mins = quantize_subbands(transformed)
+            quantized, steps = quantize_subbands(transformed)
 
             # Next, scan the quantized image to convert it to a 1D signal 
             scanned = scanning(quantized)
@@ -100,7 +100,7 @@ def main():
             decoded = unscanning(decoded, n, width, height)
 
             # Dequantize
-            dequantized = dequantize_subbands(decoded, steps, mins)
+            dequantized = dequantize_subbands(decoded, steps)
 
             print("Transformed")
             print(transformed[0].shape)
@@ -148,6 +148,7 @@ def main():
         print("Encoded entropy = {}".format(entropy_encoded))
         print("Entropy = {} Shannon/symbol".format(entropy(runs, stacks)))
         print("MSE = {}".format(mse(image, result)))
+        
         # Show the image
         plt.imshow(result)
         plt.gray()
@@ -343,8 +344,8 @@ def scanning(subbands):
     the corresponding direction and returns a 1D array.
 
     Params:
-        subbands: list containing the subbands, in the following way
-                  [cAn, (cHn, cVn, cDn), ... (cH1, cV1, cD1)] (see get_subbands)
+    - subbands: list containing the subbands, in the following way
+                [cAn, (cHn, cVn, cDn), ... (cH1, cV1, cD1)] (see get_subbands)
     """
     # 1. Scan the LL
     result = subbands[0].flatten()
@@ -406,15 +407,11 @@ def unscanning(array, n, width, height):
     return subbands
 
 
-def quantize(vector, delta, minv=0, maxv=256):
+def quantize(vector, delta):
     ''' Quantizes a vector using a given quantization step
     Params:
-        vector: vector to be quantized
-        delta: quantization step'''
-    
-    # bins = np.linspace(minv, maxv, (abs(maxv - minv)/delta) + 1)
-    # indexes = np.digitize(vector, bins)
-    # return indexes
+    - vector: vector to be quantized
+    - delta: quantization step'''
 
     return np.round(vector/delta)
 
@@ -422,71 +419,73 @@ def quantize(vector, delta, minv=0, maxv=256):
 def quantize_band(matrix, delta):
     ''' Quantize the image passed as parameter (it has to be a matrix)
     Params:
-        matrix: numpy matrix representing the image
-        delta: quantization step'''
+    - matrix: numpy matrix representing the image
+    - delta: quantization step'''
     
-    return np.apply_along_axis(quantize, 1, matrix, delta, minv=matrix.min(), maxv=matrix.max())
+    return np.apply_along_axis(quantize, 1, matrix, delta)
 
 
-def quantize_subbands(subbands):
+def quantize_subbands(subbands, steps=False):
+    ''' Quantizes the transformed image passed as parameter (it has to be represented
+    as a list of subbands, in the same way get_subbands returns it)
+    
+    Params:
+    - subbands: list containing the subbands, in the following way
+                [cAn, (cHn, cVn, cDn), ... (cH1, cV1, cD1)] (see get_subbands)
+    - steps:(optional) list containing the quantization steps used for the subbands corresponding
+            to each decomposition level. If not specified, the quantization step is automatically 
+            chosen.
+    '''
+    
     quantized = []
-    steps = []
-    mins = []
+    
+    # If the quantization step is not defined, assign it    
+    if not steps:
+        steps = []
+        n = len(subbands)
+        for i in reversed(range(n)): 
+            # Quant step is, for each level:
+            # 256 / n+2, n+1, n, n-1, ..., 4 
+            steps.append(256.0/pow(2, (i+4)))
 
-    # Quantization step is going to be 2^(n+2), where n is the decomposition level
-    n = len(subbands) - 1
-    steps.append(pow(2, n + 2))
-    mins.append(np.min(subbands[0]))
 
     quantized.append(quantize_band(subbands[0], steps[0]))
     
     for i, bands in enumerate(subbands[1:]):
-        delta = pow(2, n-i)
-        steps.append(delta)
         quantized.append((
-            quantize_band(bands[0], delta),
-            quantize_band(bands[1], delta),
-            quantize_band(bands[2], delta)))
-        mins.append((
-            np.min(bands[0]),
-            np.min(bands[1]),
-            np.min(bands[2])))
+            quantize_band(bands[0], steps[i+1]),
+            quantize_band(bands[1], steps[i+1]),
+            quantize_band(bands[2], steps[i+1])))
 
-    return quantized, steps, mins
+    return quantized, steps
 
 
-def dequantize(indexes, delta, minv):
+def dequantize(indexes, delta):
     ''' Dequantizes a vector given the quantization step
     Params:
         indexes: vector of indexes to be dequantized
-        delta: quantization step
-        minv: minimum value of the original vector'''
-    # result = []
-    # for i in indexes:
-    #     result.append(int(i)*delta - delta/2.0 + minv)
-    # return result
+        delta: quantization step'''
     return indexes.astype(np.int64)*delta
 
-def dequantize_band(matrix, delta, minv):
+def dequantize_band(matrix, delta):
     ''' Dequantize the subband passed as parameter (it has to be a matrix)
     Params:
         matrix: numpy matrix representing the quantized subband
         delta: quantization step
-        min: minimum value in the original subband
         '''
     
-    return np.apply_along_axis(dequantize, 1, matrix, delta, minv)
+    return np.apply_along_axis(dequantize, 1, matrix, delta)
 
 
-def dequantize_subbands(subbands, deltas, mins):
+def dequantize_subbands(subbands, deltas):
     dequantized = []
-    dequantized.append(dequantize_band(subbands[0], deltas[0], mins[0]))
+    dequantized.append(dequantize_band(subbands[0], deltas[0]))
     
     for i, bands in enumerate(subbands[1:]):
         dequantized.append((
-            dequantize_band(bands[0], deltas[i+1], mins[i+1][0]),
-            dequantize_band(bands[1], deltas[i+1], mins[i+1][1]),
-            dequantize_band(bands[2], deltas[i+1], mins[i+1][2])))
+            dequantize_band(bands[0], deltas[i+1]),
+            dequantize_band(bands[1], deltas[i+1]),
+            dequantize_band(bands[2], deltas[i+1])))
         
     return dequantized
 
