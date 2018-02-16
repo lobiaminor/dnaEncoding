@@ -2,15 +2,14 @@ import glymur
 import os
 import sys
 import math
-import sr_decoder
-import sr_encoder
+import stackrun as sr
 import pywt
 import nineseven as db
 import glob
 import numpy as np
 import matplotlib.image as img
 import matplotlib.pyplot as plt
-import wavelets as wv
+import haar as wv
 from PIL import Image
 import matplotlib.cm as cm
 import configparser
@@ -60,8 +59,8 @@ def main():
 
         # Initialize the Stack-Run encoder and decoder
         sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
-        sr_enc = sr_encoder.StackRunEncoder(sym)
-        sr_dec = sr_decoder.StackRunDecoder(sym)
+        sr_enc = sr.StackRunEncoder(sym)
+        sr_dec = sr.StackRunDecoder(sym)
         
         if mode == "lossless":
             # First, apply the selected wavelet transform to the image
@@ -114,14 +113,9 @@ def main():
         if save_results:
             name = os.path.basename(filename).split(".")[0] + suffix
             name = os.path.join(output_folder, name) 
-            # with open(name,'w') as f:
-            #     for s in encoded:
-            #         f.write(str(s))
-
-            # Save as JPEG2000
-            #j = glymur.Jp2k(name, image[:].astype(np.uint8), cratios=[10])
-            #print("JPEG2000 size (bits) = {}".format(os.path.getsize(name)*8)) # getsize returns bytes
-
+            with open(name,'w') as f:
+                for s in encoded:
+                    f.write(str(s))
         
         # Calculate and print qbpp (qbits/px)
         sympp = len(encoded)/(image.shape[0]*image.shape[1])
@@ -152,10 +146,6 @@ def readData(filename):
     array = np.loadtxt(filename, np.int64)
     #im = Image.fromarray(array, "I")
     return array
-
-def is_power2(num):
-    '''States if a number is a power of two'''
-    return num != 0 and ((num & (num - 1)) == 0)
 
 
 def entropy_by_subbands(subbands, base=2):
