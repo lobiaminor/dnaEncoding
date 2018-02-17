@@ -71,7 +71,7 @@ def main():
             scanned = scanning(get_subbands(transformed, n))
 
             # Apply the stack-run coding algorithm
-            encoded, runs, stacks = sr_enc.encode(scanned)  
+            encoded = sr_enc.encode(scanned)  
             
             # Decode the image and reconstruct it so it becomes a 2D matrix again
             decoded = sr_dec.decode(encoded)
@@ -94,7 +94,7 @@ def main():
             scanned = scanning(quantized)
 
             # Apply the stack-run coding algorithm
-            encoded, runs, stacks = sr_enc.encode(scanned)  
+            encoded = sr_enc.encode(scanned)  
             
             # Decode the image and undo the scanning to obtain the transformed version again
             decoded = sr_dec.decode(encoded)
@@ -121,19 +121,18 @@ def main():
         sympp = len(encoded)/(image.shape[0]*image.shape[1])
 
         # Measure entropy
-        entropy_encoded = entropy_single(np.asarray(encoded), base=2)*len(encoded)/(width*height)
+        entropy_encoded = entropy(np.asarray(encoded), base=4)*len(encoded)/(width*height)
         
         print(filename)
         print("Symbols/px = {}".format(sympp))
-        print("Original image entropy = {}".format(entropy_single(image, base=2)))
+        print("Original image entropy = {}".format(entropy(image, base=2)))
         if mode == "lossless":
             print("Transformed image entropy = {}".format(entropy_by_subbands(get_subbands(transformed, n))))
         elif mode == "quantize":
             # We are only interested in the entropy after quantization
             # print("Transformed image entropy = {}".format(entropy_by_subbands(transformed)))
             print("Quantized image entropy = {}".format(entropy_by_subbands(quantized)))
-        print("Encoded entropy = {} bits/pixel".format(entropy_encoded))
-        print("Encoded entropy (base 4) = {} Shannon/symbol".format(entropy(runs, stacks)))
+        print("Encoded entropy = {} Shannon/pixel".format(entropy_encoded))
         print("MSE = {}".format(mse(image, result)))
         
         # Show the image
@@ -148,45 +147,7 @@ def readData(filename):
     return array
 
 
-def entropy_by_subbands(subbands, base=2):
-    '''Calculates the entropy of the transformed image passed as parameter. 
-    
-    Params:
-        subbands: array containing the coefficients of the subbands of the transformed image
-                  (same format as get_subbands is expected)
-        base: base of the logarithm used for the calculations. Default is 2.'''
-    n = len(subbands) - 1
-    entropy = entropy_single(subbands[0], base=base) / pow(4, n)
-    
-    for i, bands in enumerate(subbands[1:]):
-        for band in bands:
-            entropy += entropy_single(band, base=base)/ pow(4, n-i)
-
-    return entropy
-
-
-def entropy(runs, stacks, base=4):
-    '''Calculates the entropy of an encoded image, represented by two dictionaries 
-    containing the counts of the different sized stacks and runs respectively.
-
-    Params:
-        runs: dictionary where the keys represent run lengths and the values are their observed frequencies
-        stacks: dictionary where keys are stack sizes and values their observed frequencies'''
-
-    # To normalize the frequencies, first we need to obtain the total sum of the counts
-    total = float(sum(runs.values()) + sum(stacks.values()))
-
-    # Calculate the entropy using the probabilities
-    entropy = 0
-    for count in (list(runs.values()) + list(stacks.values())):
-        if count != 0:
-            norm = count/total
-            entropy -= norm * np.math.log(norm, base)
-
-    return entropy
-
-
-def entropy_single(image, base=4):
+def entropy(image, base=4):
     '''Calculates the entropy of the image passed as parameter. 
     
     Params:
@@ -208,6 +169,23 @@ def entropy_single(image, base=4):
             entropy -= norm * np.math.log(norm, base)
 
     return entropy
+
+
+def entropy_by_subbands(subbands, base=2):
+    '''Calculates the entropy of the transformed image passed as parameter. 
+    
+    Params:
+        subbands: array containing the coefficients of the subbands of the transformed image
+                  (same format as get_subbands is expected)
+        base: base of the logarithm used for the calculations. Default is 2.'''
+    n = len(subbands) - 1
+    ent = entropy(subbands[0], base=base) / pow(4, n)
+    
+    for i, bands in enumerate(subbands[1:]):
+        for band in bands:
+            ent += entropy(band, base=base)/ pow(4, n-i)
+
+    return ent
 
 
 def histogram(vals):
