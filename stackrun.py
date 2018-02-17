@@ -127,17 +127,17 @@ class StackRunEncoder(object):
     def runEncoding(self, run_length):
         # we encode 0 as -, 1 as + and we truncate the least significant bit if the number is not of the form (2^k)-1
         bit_rep = list("{0:b}".format(run_length))
-        for b in bit_rep:
-            if b == "0":
-                b = "-"
+        for i in range(0, len(bit_rep)):
+            if bit_rep[i] == "0":
+                bit_rep[i] = "-"
             else:
-                b = "+"
+                bit_rep[i] = "+"
 
         # invert the order of the obtained list
         bit_rep = bit_rep[::-1]
         # we can remove the last element of the list UNLESS the encoded value contains only "+"
-        for b in bit_rep:
-            if b == "-":
+        for i in range(0, len(bit_rep)):
+            if bit_rep[i] == "-":
                 del bit_rep[-1]
                 break
 
@@ -148,17 +148,18 @@ class StackRunEncoder(object):
         run_length = 0
         encoded_sig = list()
         
-        for s in signal:
-            if s == 0:
+        for i in range(0, len(signal)):
+            if signal[i] == 0:
                 run_length+=1
             else:
                 encoded_sig.extend(self.runEncoding(run_length))
                 run_length = 0
-                encoded_sig.extend(self.stackEncoding(s))
+                encoded_sig.extend(self.stackEncoding(signal[i])) 
 
         # Handle the case of having a run at the end of the signal
         if signal[-1] == 0:
-            encoded_sig.extend(self.runEncoding(run_length)) 
+            encoded_sig.extend(self.runEncoding(run_length))
+
 
         encoded_translated_sig = list(map(self.symbols.get, encoded_sig))
 

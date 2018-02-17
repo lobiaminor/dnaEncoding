@@ -33,8 +33,8 @@ def main():
 
         for n in range(1,9):
             print(".")
-            transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
-            #transformed = wv.iwtn(image, n)
+            #transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
+            transformed = wv.iwtn(image, n)
 
             sym = {"0":"0", "1":"1", "+":"+", "-":"-"} 
             sr_enc = sr.StackRunEncoder(sym)
