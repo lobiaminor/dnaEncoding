@@ -1,6 +1,6 @@
 # dnaEncoding
-data science project 2017/2018 unice
-authors: Jose Luis Contreras, Riccardo Lo Bianco
+data science project 2017/2018 unice --
+authors: Jose Luis Contreras, Riccardo Lo Bianco --
 referent professor: Marc Antonini
 
 
