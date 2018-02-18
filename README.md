@@ -32,7 +32,7 @@ https://upload.wikimedia.org/wikipedia/commons/e/e0/Jpeg2000_2-level_wavelet_tra
 13- Conclusion & implementation (this will be more like a fancy readme/instructions on how to use the code)
 14- Slides
 15- Add CDF 9/7 (not integer to integer) and quantization afterwards. For the quantizer: diff quant step for each level of subbands (set as a parameter)
-- Quantizer: remove the minv shit and center it around zero DONE
+- Quantizer: remove the minv and center it around zero DONE
 - Inverse transform with pywt: there is something wrong at some point in the process which makes the final coeffs not compatible with waverec2, find it DONE ALSO!
 
 # Future improvements section
@@ -54,9 +54,6 @@ Depth maps:
 7- Try also daub. 5/3 lifting(2,2)
 10B- Comment the number of stacks/number of runs and their average lengths
 
-# Questions for Marc
-1- Entropy: how to calculate it, is our method right?
-2- PyWavelets: Daubechies 9 == CDF 9/7? 
 
 Both
 - Comment the iwt methods properly

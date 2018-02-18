@@ -64,8 +64,8 @@ def main():
         
         if mode == "lossless":
             # First, apply the selected wavelet transform to the image
-            #transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
-            transformed = wv.iwtn(image, n)
+            transformed = db.fwt97_2d(np.array(image, dtype=np.int64), n)
+            #transformed = wv.iwtn(image, n)
 
             # Next, scan the transformed image to convert it to a 1D signal 
             scanned = scanning(get_subbands(transformed, n))
@@ -78,8 +78,8 @@ def main():
             decoded = reconstruct_subbands(unscanning(decoded, n, width, height), width, height)
 
             # Apply the inverse of the previous wavelet transform to obtain the decompressed img
-            result = wv.iiwtn(decoded, n)
-            #result = db.iwt97_2d(decoded, n)
+            #result = wv.iiwtn(decoded, n)
+            result = db.iwt97_2d(decoded, n)
         elif mode == "quantize":
             # Apply the wavelet transform to the image 
             # This time it's not integer to integer, but we'll quantize afterwards
@@ -136,9 +136,9 @@ def main():
         print("MSE = {}".format(mse(image, result)))
         
         # Show the image
-        plt.imshow(result)
-        plt.gray()
-        plt.show()
+        # plt.imshow(result)
+        # plt.gray()
+        # plt.show()
 
 
 def readData(filename):

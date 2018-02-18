@@ -1,0 +1,13 @@
+Image,Original image entropy,Haar transformed entropy,Haar encoded entropy (Shannon/px),CDF transformed entropy (bits/sym),CDF Encoded entropy (Shannon/px)
+lake.jpg,7.49,5.44,3.01,2.91,1.55
+woman_blonde.jpg,7.16,5.15,2.88,2.53,1.36
+woman_darkhair.jpg,7.27,3.77,2.13,0.87,0.51
+cameraman.jpg,7.05,4.08,2.25,1.11,0.61
+lena.jpg,7.45,4.67,2.61,1.78,0.95
+jetplane.jpg,6.72,4.50,2.49,1.69,0.91
+house.jpg,5.77,3.36,1.74,0.56,0.38
+peppers_gray.jpg,7.58,5.09,2.88,2.57,1.42
+livingroom.jpg,7.44,5.24,2.92,2.66,1.43
+pirate.jpg,7.31,5.14,2.84,2.47,1.30
+mandril_gray.jpg,7.29,5.79,3.29,2.24,1.29
+walkbridge.jpg,7.71,5.99,3.37,3.71,2.01
