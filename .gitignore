@@ -1,2 +1,6 @@
 #Ignore these directories
 __pycache__
+counts
+depthmaps
+dna_coding_docs
+results
